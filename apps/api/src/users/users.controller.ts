@@ -62,15 +62,17 @@ export class UsersController {
 
   @Get('search')
   @UseGuards(RolesGuard)
-  @Roles('admin', 'system_admin')
-  @ApiOperation({ summary: 'Search users (admin only)' })
-  @ApiQuery({ name: 'q', required: true, description: 'Search query' })
+  @Roles('admin', 'system_admin', 'staff', 'super_admin')
+  @ApiOperation({ summary: 'Search users (staff/admin)' })
+  @ApiQuery({ name: 'email', required: false, description: 'Email to search' })
+  @ApiQuery({ name: 'q', required: false, description: 'Search query' })
   @ApiQuery({ name: 'page', required: false, description: 'Page number', example: 1 })
   @ApiQuery({ name: 'limit', required: false, description: 'Items per page', example: 10 })
   @ApiResponse({ status: 200, description: 'Users found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Staff access required' })
   async searchUsers(
+    @Query('email') email: string,
     @Query('q') query: string,
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
@@ -78,8 +80,13 @@ export class UsersController {
     data: any[];
     meta: { total: number; page: number; limit: number; totalPages: number };
   }> {
+    const searchQuery = email || query;
+    if (!searchQuery) {
+      return { data: [], meta: { total: 0, page: 1, limit: 10, totalPages: 0 } };
+    }
+
     return this.usersService.searchUsers(
-      query,
+      searchQuery,
       parseInt(page, 10),
       parseInt(limit, 10),
     );

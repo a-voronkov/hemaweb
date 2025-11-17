@@ -113,7 +113,7 @@ export class UsersService {
   }
 
   /**
-   * Search users (admin only)
+   * Search users (admin only or by exact email)
    */
   async searchUsers(query: string, page: number = 1, limit: number = 10): Promise<{
     data: any[];
@@ -121,17 +121,28 @@ export class UsersService {
   }> {
     const skip = (page - 1) * limit;
 
+    // Check if query is an email (exact match)
+    const isEmail = query.includes('@');
+
+    const whereClause = isEmail
+      ? { email: { equals: query, mode: 'insensitive' as const } }
+      : {
+          OR: [
+            { email: { contains: query, mode: 'insensitive' as const } },
+            { profile: { firstName: { contains: query, mode: 'insensitive' as const } } },
+            { profile: { lastName: { contains: query, mode: 'insensitive' as const } } },
+          ],
+        };
+
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
-        where: {
-          OR: [
-            { email: { contains: query, mode: 'insensitive' } },
-            { profile: { firstName: { contains: query, mode: 'insensitive' } } },
-            { profile: { lastName: { contains: query, mode: 'insensitive' } } },
-          ],
-        },
+        where: whereClause,
         include: {
-          profile: true,
+          profile: {
+            include: {
+              bloodType: true,
+            },
+          },
           role: true,
         },
         skip,
@@ -139,13 +150,7 @@ export class UsersService {
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.user.count({
-        where: {
-          OR: [
-            { email: { contains: query, mode: 'insensitive' } },
-            { profile: { firstName: { contains: query, mode: 'insensitive' } } },
-            { profile: { lastName: { contains: query, mode: 'insensitive' } } },
-          ],
-        },
+        where: whereClause,
       }),
     ]);
 

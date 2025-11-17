@@ -109,18 +109,28 @@ export class MedicalCentersService {
     // Get donor profile
     const donor = await this.prisma.profile.findUnique({
       where: { userId: donorUserId },
+      include: { user: true },
     });
 
     if (!donor) {
       throw new NotFoundException('Donor not found');
     }
 
+    // Get donor's blood type or use a default
+    const bloodTypeId = donor.bloodTypeId || (await this.prisma.bloodTypeRef.findFirst({ where: { code: 'O+' } }))?.id;
+
+    if (!bloodTypeId) {
+      throw new BadRequestException('Blood type not found');
+    }
+
     // Create verification record
     const verification = await this.prisma.verificationRecord.create({
       data: {
-        userId: donorUserId,
+        profileId: donor.id,
         medicalCenterId,
         verifiedById: staffUserId,
+        bloodTypeId,
+        isEligible: true,
         verifiedAt: new Date(),
         notes,
       },
@@ -128,7 +138,7 @@ export class MedicalCentersService {
 
     // Update donor profile
     await this.prisma.profile.update({
-      where: { userId: donorUserId },
+      where: { id: donor.id },
       data: { isDonorVerified: true },
     });
 
@@ -174,17 +184,29 @@ export class MedicalCentersService {
     // Create donation record
     const donation = await this.prisma.donationRecord.create({
       data: {
-        userId: donorUserId,
+        profileId: donor.id,
         medicalCenterId,
         bloodTypeId,
         volumeMl,
-        donatedAt: new Date(),
+        donationDate: new Date(),
         recordedById: staffUserId,
         notes,
       },
       include: {
         bloodType: true,
         medicalCenter: true,
+      },
+    });
+
+    // Update donor's last donation date and next eligible date (56 days later)
+    const nextEligibleDate = new Date();
+    nextEligibleDate.setDate(nextEligibleDate.getDate() + 56);
+
+    await this.prisma.profile.update({
+      where: { id: donor.id },
+      data: {
+        lastDonationDate: new Date(),
+        nextEligibleDate,
       },
     });
 
@@ -252,16 +274,30 @@ export class MedicalCentersService {
     const verifications = await this.prisma.verificationRecord.findMany({
       where: { medicalCenterId: staff.medicalCenterId },
       include: {
-        user: {
+        profile: {
           include: {
-            profile: true,
+            user: true,
+            bloodType: true,
           },
         },
+        bloodType: true,
       },
       orderBy: { verifiedAt: 'desc' },
     });
 
-    return { data: verifications };
+    // Transform to match expected format
+    const transformed = verifications.map(v => ({
+      ...v,
+      user: {
+        ...v.profile.user,
+        profile: {
+          ...v.profile,
+          bloodType: v.bloodType,
+        },
+      },
+    }));
+
+    return { data: transformed };
   }
 
   /**
@@ -279,18 +315,28 @@ export class MedicalCentersService {
     const donations = await this.prisma.donationRecord.findMany({
       where: { medicalCenterId: staff.medicalCenterId },
       include: {
-        user: {
+        profile: {
           include: {
-            profile: true,
+            user: true,
           },
         },
         bloodType: true,
       },
-      orderBy: { donatedAt: 'desc' },
+      orderBy: { donationDate: 'desc' },
       take: 100,
     });
 
-    return { data: donations };
+    // Transform to match expected format
+    const transformed = donations.map(d => ({
+      ...d,
+      donatedAt: d.donationDate,
+      user: {
+        ...d.profile.user,
+        profile: d.profile,
+      },
+    }));
+
+    return { data: transformed };
   }
 }
 
