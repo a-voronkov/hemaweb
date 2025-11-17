@@ -14,6 +14,9 @@ ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
+# Increase Node.js memory limit for heavy install/build steps
+ENV NODE_OPTIONS=--max-old-space-size=4096
+
 WORKDIR /app
 
 # Copy package files
