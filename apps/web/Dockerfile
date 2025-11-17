@@ -1,6 +1,16 @@
 # Build stage
 FROM node:20-alpine AS builder
 
+# Build arguments for Next.js public env vars
+ARG NEXT_PUBLIC_API_URL=https://hemaweb.world/api
+ARG NEXT_PUBLIC_APP_NAME=HemaWeb
+ARG NEXT_PUBLIC_APP_URL=https://hemaweb.world
+
+# Set as environment variables for build
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
