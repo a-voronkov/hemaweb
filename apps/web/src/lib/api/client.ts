@@ -46,8 +46,19 @@ async function request<T>(
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
+    // Handle validation errors (array of messages)
+    let errorMessage = 'An error occurred';
+    if (data?.message) {
+      if (Array.isArray(data.message)) {
+        // Join multiple validation errors
+        errorMessage = data.message.join('. ');
+      } else {
+        errorMessage = data.message;
+      }
+    }
+
     throw new APIError(
-      data?.message || 'An error occurred',
+      errorMessage,
       response.status,
       data
     );
