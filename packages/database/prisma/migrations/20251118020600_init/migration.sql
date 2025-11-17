@@ -1,5 +1,5 @@
 -- CreateExtension
-CREATE EXTENSION IF NOT EXISTS "postgis" WITH VERSION "3.4.0";
+CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- CreateTable
 CREATE TABLE "blood_type_ref" (
