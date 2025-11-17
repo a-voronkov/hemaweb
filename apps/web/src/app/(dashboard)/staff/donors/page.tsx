@@ -39,7 +39,7 @@ export default function DonorsListPage() {
 
   const loadDonors = async () => {
     try {
-      const response = await apiClient.get('/medical-centers/staff/donors');
+      const response = await apiClient.get<{ data: any[] }>('/medical-centers/staff/donors');
       setDonors(response.data || []);
       setFilteredDonors(response.data || []);
     } catch (err) {

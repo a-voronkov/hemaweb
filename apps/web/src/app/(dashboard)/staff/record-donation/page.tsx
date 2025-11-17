@@ -37,7 +37,7 @@ export default function RecordDonationPage() {
 
   const loadBloodTypes = async () => {
     try {
-      const response = await apiClient.get('/reference/blood-types');
+      const response = await apiClient.get<{ data: any[] }>('/reference/blood-types');
       setBloodTypes(response.data || []);
     } catch (err) {
       console.error('Failed to load blood types:', err);
@@ -55,9 +55,9 @@ export default function RecordDonationPage() {
     setDonor(null);
 
     try {
-      const response = await apiClient.get(`/users/search?email=${searchEmail}`);
+      const response = await apiClient.get<{ data: any[] }>(`/users/search?email=${searchEmail}`);
       const users = response.data || [];
-      
+
       if (users.length === 0) {
         setError('Donor not found');
         return;
@@ -84,7 +84,7 @@ export default function RecordDonationPage() {
       
       // Get staff's center
       if (!center) {
-        const centerRes = await apiClient.get('/medical-centers/staff/my-center');
+        const centerRes = await apiClient.get<{ data: any }>('/medical-centers/staff/my-center');
         setCenter(centerRes.data);
       }
     } catch (err: any) {
