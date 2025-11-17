@@ -50,7 +50,6 @@ RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 COPY --from=builder /app/packages/config ./packages/config
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
 COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
-COPY --from=builder /app/packages/database/node_modules/.prisma ./packages/database/node_modules/.prisma
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
 # Generate Prisma Client in production
