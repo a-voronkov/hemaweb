@@ -78,5 +78,24 @@ export const api = {
   // DELETE request
   delete: <T>(endpoint: string, token?: string) =>
     request<T>(endpoint, { method: 'DELETE', token }),
+
+  // Get current user
+  async getCurrentUser(): Promise<User> {
+    return request<User>('/users/me');
+  },
+
+  // Update profile
+  async updateProfile(data: {
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+    address?: string;
+    dateOfBirth?: string;
+  }): Promise<User> {
+    return request<User>('/users/me/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
 };
 
