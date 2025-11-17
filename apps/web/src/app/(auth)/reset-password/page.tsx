@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { MainLayout } from '@/components/layout/main-layout';
@@ -11,6 +11,14 @@ import { Label } from '@/components/ui/label';
 import { apiClient } from '@/lib/api/client';
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordPageInner />
+    </Suspense>
+  );
+}
+
+function ResetPasswordPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get('token');
