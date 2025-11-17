@@ -1,6 +1,22 @@
 version: '3.9'
 
 services:
+  # Frontend (Next.js)
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: hemaweb-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://hemaweb.world/api}
+      NEXT_PUBLIC_APP_NAME: HemaWeb
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://hemaweb.world}
+    networks:
+      - hemaweb-network
+
   # API Backend
   api:
     build:
@@ -18,6 +34,7 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
       REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://hemaweb.world}
+      FRONTEND_URL: ${FRONTEND_URL:-https://hemaweb.world}
     networks:
       - hemaweb-network
     depends_on:
@@ -43,9 +60,8 @@ services:
     networks:
       - hemaweb-network
     depends_on:
+      - web
       - api
-      - postgres
-      - redis
 
   # Certbot for SSL certificates
   certbot:
