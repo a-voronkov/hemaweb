@@ -7,10 +7,29 @@ import { Button } from '@/components/ui/button';
 import { apiClient } from '@/lib/api/client';
 import Link from 'next/link';
 
+interface MedicalCenter {
+  id: string;
+  name: string;
+  city?: string;
+}
+
+interface BloodDrive {
+  id: string;
+  title: string;
+  description?: string | null;
+  medicalCenterId: string;
+  startDateTime: string;
+  endDateTime?: string | null;
+  targetDonors?: number | null;
+  status?: { code: string; name: string } | null;
+  type?: { name: string } | null;
+  bloodTypesNeeded?: { id: string; bloodType: { name: string } }[];
+}
+
 export default function BloodDrivesListPage() {
   const [loading, setLoading] = useState(true);
-  const [bloodDrives, setBloodDrives] = useState<any[]>([]);
-  const [center, setCenter] = useState<any>(null);
+  const [bloodDrives, setBloodDrives] = useState<BloodDrive[]>([]);
+  const [center, setCenter] = useState<MedicalCenter | null>(null);
 
   useEffect(() => {
     loadData();
@@ -19,15 +38,15 @@ export default function BloodDrivesListPage() {
   const loadData = async () => {
     try {
       const [centerRes, drivesRes] = await Promise.all([
-        apiClient.get('/medical-centers/staff/my-center'),
-        apiClient.get('/blood-drives'),
+        apiClient.get<{ data: MedicalCenter }>('/medical-centers/staff/my-center'),
+        apiClient.get<{ data: BloodDrive[] }>('/blood-drives'),
       ]);
 
       setCenter(centerRes.data);
-      
+
       // Filter drives for this center
       const centerDrives = (drivesRes.data || []).filter(
-        (drive: any) => drive.medicalCenterId === centerRes.data.id
+        (drive) => drive.medicalCenterId === centerRes.data.id
       );
       setBloodDrives(centerDrives);
     } catch (err) {

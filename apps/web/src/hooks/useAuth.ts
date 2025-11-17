@@ -29,7 +29,7 @@ export function useAuth() {
 
   const checkAuth = async () => {
     try {
-      const response = await apiClient.get('/auth/session');
+      const response = await apiClient.get<{ valid: boolean; session: any; user: User }>('/auth/session');
       setUser(response.user);
     } catch (error) {
       setUser(null);
