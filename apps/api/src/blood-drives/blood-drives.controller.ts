@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { BloodDrivesService } from './blood-drives.service';
 import { CreateBloodDriveDto } from './dto/create-blood-drive.dto';
 import { UpdateBloodDriveDto } from './dto/update-blood-drive.dto';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
@@ -20,7 +20,7 @@ export class BloodDrivesController {
   async getAllBloodDrives(
     @Query('status') status?: string,
     @Query('type') type?: string,
-  ) {
+  ): Promise<{ data: any[] }> {
     return this.bloodDrivesService.getAllBloodDrives(status, type);
   }
 
@@ -36,7 +36,7 @@ export class BloodDrivesController {
     @Query('lng') lng: string,
     @Query('radius') radius?: string,
     @Query('bloodType') bloodType?: string,
-  ) {
+  ): Promise<{ data: any[] }> {
     return this.bloodDrivesService.getNearbyBloodDrives(
       parseFloat(lat),
       parseFloat(lng),
@@ -49,7 +49,7 @@ export class BloodDrivesController {
   @ApiOperation({ summary: 'Get blood drive by ID' })
   @ApiResponse({ status: 200, description: 'Blood drive retrieved' })
   @ApiResponse({ status: 404, description: 'Blood drive not found' })
-  async getBloodDriveById(@Param('id') id: string) {
+  async getBloodDriveById(@Param('id') id: string): Promise<{ data: any }> {
     return this.bloodDrivesService.getBloodDriveById(id);
   }
 
@@ -63,7 +63,7 @@ export class BloodDrivesController {
   async createBloodDrive(
     @Request() req,
     @Body() createBloodDriveDto: CreateBloodDriveDto,
-  ) {
+  ): Promise<{ message: string; data: any }> {
     return this.bloodDrivesService.createBloodDrive(req.user.id, createBloodDriveDto);
   }
 
@@ -79,7 +79,7 @@ export class BloodDrivesController {
     @Request() req,
     @Param('id') id: string,
     @Body() updateBloodDriveDto: UpdateBloodDriveDto,
-  ) {
+  ): Promise<{ message: string; data: any }> {
     return this.bloodDrivesService.updateBloodDrive(req.user.id, id, updateBloodDriveDto);
   }
 

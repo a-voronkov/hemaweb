@@ -10,7 +10,7 @@ export class BloodDrivesService {
   /**
    * Get all blood drives
    */
-  async getAllBloodDrives(status?: string, type?: string) {
+  async getAllBloodDrives(status?: string, type?: string): Promise<{ data: any[] }> {
     const where: any = { deletedAt: null };
 
     if (status) {
@@ -48,7 +48,7 @@ export class BloodDrivesService {
   /**
    * Get nearby blood drives
    */
-  async getNearbyBloodDrives(lat: number, lng: number, radiusKm: number = 50, bloodType?: string) {
+  async getNearbyBloodDrives(lat: number, lng: number, radiusKm: number = 50, bloodType?: string): Promise<{ data: any[] }> {
     const bloodDrives = await this.prisma.bloodDrive.findMany({
       where: {
         deletedAt: null,
@@ -96,7 +96,7 @@ export class BloodDrivesService {
   /**
    * Get blood drive by ID
    */
-  async getBloodDriveById(id: string) {
+  async getBloodDriveById(id: string): Promise<{ data: any }> {
     const bloodDrive = await this.prisma.bloodDrive.findUnique({
       where: { id },
       include: {
@@ -137,7 +137,7 @@ export class BloodDrivesService {
   /**
    * Create blood drive
    */
-  async createBloodDrive(userId: string, dto: CreateBloodDriveDto) {
+  async createBloodDrive(userId: string, dto: CreateBloodDriveDto): Promise<{ message: string; data: any }> {
     // Get staff info
     const staff = await this.prisma.medicalCenterStaff.findUnique({
       where: { userId },
@@ -225,7 +225,7 @@ export class BloodDrivesService {
   /**
    * Update blood drive
    */
-  async updateBloodDrive(userId: string, id: string, dto: UpdateBloodDriveDto) {
+  async updateBloodDrive(userId: string, id: string, dto: UpdateBloodDriveDto): Promise<{ message: string; data: any }> {
     const bloodDrive = await this.prisma.bloodDrive.findUnique({
       where: { id },
       include: { medicalCenter: true },
