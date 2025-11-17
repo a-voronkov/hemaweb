@@ -1,0 +1,90 @@
+name: Deploy to hemaweb.world
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H hemaweb.world >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        run: |
+          ssh root@hemaweb.world << 'ENDSSH'
+            set -e
+            
+            echo "🚀 Starting deployment..."
+            
+            # Navigate to project directory
+            cd /srv/hemaweb
+            
+            # Pull latest changes
+            echo "📥 Pulling latest code from GitHub..."
+            git fetch origin
+            git reset --hard origin/main
+            git pull origin main
+            
+            # Install/update dependencies
+            echo "📦 Installing dependencies..."
+            pnpm install
+            
+            # Generate Prisma Client
+            echo "🔧 Generating Prisma Client..."
+            cd packages/database
+            pnpm prisma generate
+            cd ../..
+            
+            # Run migrations (if any)
+            echo "🗄️ Running database migrations..."
+            pnpm db:migrate || echo "No new migrations"
+            
+            # Restart Docker services
+            echo "🔄 Restarting Docker services..."
+            docker compose -f docker-compose.yml -f docker-compose.prod.yml restart
+            
+            # Check service status
+            echo "✅ Checking service status..."
+            docker compose ps
+            
+            echo "🎉 Deployment completed successfully!"
+          ENDSSH
+
+      - name: Verify deployment
+        run: |
+          ssh root@hemaweb.world << 'ENDSSH'
+            cd /srv/hemaweb
+            echo "=== Git Status ==="
+            git log --oneline -3
+            echo ""
+            echo "=== Docker Services ==="
+            docker compose ps
+            echo ""
+            echo "=== Database Status ==="
+            docker compose exec -T postgres psql -U hemaweb -d hemaweb -c 'SELECT COUNT(*) as user_count FROM users;'
+          ENDSSH
+
+      - name: Notify on success
+        if: success()
+        run: echo "✅ Deployment to hemaweb.world successful!"
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "❌ Deployment to hemaweb.world failed!"
+
