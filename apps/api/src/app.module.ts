@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ReferenceModule } from './reference/reference.module';
+import { MedicalCentersModule } from './medical-centers/medical-centers.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -18,6 +19,7 @@ import configuration from './config/configuration';
     AuthModule,
     UsersModule,
     ReferenceModule,
+    MedicalCentersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
