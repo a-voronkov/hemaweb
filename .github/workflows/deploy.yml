@@ -29,40 +29,47 @@ jobs:
         run: |
           ssh root@hemaweb.world << 'ENDSSH'
             set -e
-            
+
             echo "🚀 Starting deployment..."
-            
+
             # Navigate to project directory
             cd /srv/hemaweb
-            
+
             # Pull latest changes
             echo "📥 Pulling latest code from GitHub..."
             git fetch origin
             git reset --hard origin/main
             git pull origin main
-            
+
             # Install/update dependencies
             echo "📦 Installing dependencies..."
             pnpm install
-            
+
             # Generate Prisma Client
             echo "🔧 Generating Prisma Client..."
             cd packages/database
             pnpm prisma generate
             cd ../..
-            
-            # Run migrations (if any)
-            echo "🗄️ Running database migrations..."
-            pnpm db:migrate || echo "No new migrations"
-            
-            # Restart Docker services
-            echo "🔄 Restarting Docker services..."
-            docker compose -f docker-compose.yml -f docker-compose.prod.yml restart
-            
+
+            # Rebuild and restart API container (includes migrations)
+            echo "🔨 Rebuilding API container..."
+            docker compose build api
+
+            echo "🔄 Restarting services..."
+            docker compose up -d
+
+            # Wait for services to be ready
+            echo "⏳ Waiting for services to start..."
+            sleep 10
+
             # Check service status
             echo "✅ Checking service status..."
             docker compose ps
-            
+
+            # Check API logs
+            echo "📋 Recent API logs..."
+            docker compose logs api --tail 20
+
             echo "🎉 Deployment completed successfully!"
           ENDSSH
 
@@ -76,8 +83,11 @@ jobs:
             echo "=== Docker Services ==="
             docker compose ps
             echo ""
+            echo "=== API Health Check ==="
+            curl -f http://localhost:3001/api || echo "API not responding"
+            echo ""
             echo "=== Database Status ==="
-            docker compose exec -T postgres psql -U hemaweb -d hemaweb -c 'SELECT COUNT(*) as user_count FROM users;'
+            docker compose exec -T postgres psql -U hemaweb -d hemaweb -c 'SELECT COUNT(*) as user_count FROM users;' || echo "Database query failed"
           ENDSSH
 
       - name: Notify on success
