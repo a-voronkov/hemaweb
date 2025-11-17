@@ -1,0 +1,542 @@
+// HemaWeb Database Schema v2 - Improved with Best Practices
+// Changes:
+// 1. Unified user table with polymorphic roles
+// 2. Reference tables for blood types, statuses, etc.
+// 3. Proper PostGIS geography types
+// 4. Audit fields (createdBy, updatedBy, deletedAt)
+// 5. Normalized structure
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis(version: "3.4.0")]
+}
+
+// ============================================================================
+// REFERENCE TABLES (Справочники)
+// ============================================================================
+
+model BloodTypeRef {
+  id          String   @id @default(cuid())
+  code        String   @unique // A+, A-, B+, B-, AB+, AB-, O+, O-
+  name        String   // A Positive, A Negative, etc.
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  profiles            Profile[]
+  verificationRecords VerificationRecord[]
+  donationRecords     DonationRecord[]
+  bloodDriveNeeds     BloodDriveBloodType[]
+
+  @@map("blood_type_ref")
+}
+
+model UserRoleRef {
+  id          String   @id @default(cuid())
+  code        String   @unique // donor, staff, admin, super_admin, system_admin
+  name        String   // Donor, Staff, Admin, etc.
+  description String?
+  permissions Json? // Array of permission codes
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users User[]
+
+  @@map("user_role_ref")
+}
+
+model BloodDriveStatusRef {
+  id          String   @id @default(cuid())
+  code        String   @unique // upcoming, active, completed, cancelled
+  name        String
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  bloodDrives BloodDrive[]
+
+  @@map("blood_drive_status_ref")
+}
+
+model BloodDriveTypeRef {
+  id          String   @id @default(cuid())
+  code        String   @unique // scheduled, emergency
+  name        String
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  bloodDrives BloodDrive[]
+
+  @@map("blood_drive_type_ref")
+}
+
+model AvailabilityStatusRef {
+  id          String   @id @default(cuid())
+  code        String   @unique // available, emergencies_only, unavailable
+  name        String
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  profiles Profile[]
+
+  @@map("availability_status_ref")
+}
+
+model NotificationTypeRef {
+  id          String   @id @default(cuid())
+  code        String   @unique // blood_drive_alert, donation_confirmation, etc.
+  name        String
+  description String?
+  template    String? // Email/notification template
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  notifications Notification[]
+
+  @@map("notification_type_ref")
+}
+
+// ============================================================================
+// UNIFIED USER TABLE
+// ============================================================================
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  roleId       String
+  isActive     Boolean   @default(true)
+  isVerified   Boolean   @default(false) // Email verification
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime? // Soft delete
+
+  // Relations
+  role                 UserRoleRef           @relation(fields: [roleId], references: [id])
+  profile              Profile? // For donors
+  medicalCenterStaff   MedicalCenterStaff? // For staff/admin/super_admin
+  systemAdmin          SystemAdmin? // For system admins
+  sessions             Session[]
+  notifications        Notification[]
+  createdBloodDrives   BloodDrive[]          @relation("CreatedByUser")
+  verificationRecords  VerificationRecord[]  @relation("VerifiedByUser")
+  donationRecords      DonationRecord[]      @relation("RecordedByUser")
+  activityLogs         ActivityLog[]
+  suspensionLogs       SuspensionLog[]       @relation("SuspendedUser")
+  suspensionsByAdmin   SuspensionLog[]       @relation("SuspendedByAdmin")
+
+  @@index([email])
+  @@index([roleId])
+  @@map("users")
+}
+
+// ============================================================================
+// USER PROFILES (Polymorphic based on role)
+// ============================================================================
+
+// Donor Profile
+model Profile {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  firstName             String
+  lastName              String
+  phone                 String?
+  dateOfBirth           DateTime?
+  bloodTypeId           String?
+  availabilityStatusId  String?
+  isDonorVerified       Boolean   @default(false) // Medical verification
+  lastDonationDate      DateTime?
+  nextEligibleDate      DateTime?
+  // PostGIS geography type for location
+  locationLat           Float?
+  locationLng           Float?
+  locationGeography     Unsupported("geography(Point, 4326)")?
+  address               String?
+  city                  String?
+  country               String?   @default("Thailand")
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bloodType           BloodTypeRef?          @relation(fields: [bloodTypeId], references: [id])
+  availabilityStatus  AvailabilityStatusRef? @relation(fields: [availabilityStatusId], references: [id])
+  verificationRecords VerificationRecord[]
+  donationRecords     DonationRecord[]
+
+  @@index([userId])
+  @@index([bloodTypeId])
+  @@index([isDonorVerified])
+  @@map("profiles")
+}
+
+// Medical Center Staff Profile (Staff, Admin, Super Admin)
+model MedicalCenterStaff {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  firstName       String
+  lastName        String
+  phone           String?
+  medicalCenterId String? // NULL for Super Admins (org-level)
+  organizationId  String? // For Super Admins
+  position        String? // Job title
+  licenseNumber   String? // Medical license
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  medicalCenter   MedicalCenter?     @relation(fields: [medicalCenterId], references: [id], onDelete: SetNull)
+  organization    MedicalOrganization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([medicalCenterId])
+  @@index([organizationId])
+  @@map("medical_center_staff")
+}
+
+// System Admin Profile
+model SystemAdmin {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  firstName           String
+  lastName            String
+  phone               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  informationRecords  InformationRecord[]
+
+  @@index([userId])
+  @@map("system_admins")
+}
+
+// ============================================================================
+// MEDICAL ORGANIZATIONS & CENTERS
+// ============================================================================
+
+model MedicalOrganization {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  logoUrl     String?
+  website     String?
+  email       String?
+  phone       String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? // Soft delete
+
+  // Relations
+  medicalCenters MedicalCenter[]
+  staff          MedicalCenterStaff[]
+
+  @@index([isActive])
+  @@map("medical_organizations")
+}
+
+model MedicalCenter {
+  id             String    @id @default(cuid())
+  organizationId String
+  name           String
+  code           String?   @unique // Short code for center
+  address        String
+  city           String
+  country        String    @default("Thailand")
+  // PostGIS geography for location
+  locationLat    Float?
+  locationLng    Float?
+  locationGeography Unsupported("geography(Point, 4326)")?
+  phone          String?
+  email          String?
+  logoUrl        String?
+  website        String?
+  operatingHours Json? // { "monday": "08:00-17:00", ... }
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime? // Soft delete
+
+  // Relations
+  organization        MedicalOrganization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  staff               MedicalCenterStaff[]
+  bloodDrives         BloodDrive[]
+  verificationRecords VerificationRecord[]
+  donationRecords     DonationRecord[]
+
+  @@index([organizationId])
+  @@index([isActive])
+  @@map("medical_centers")
+}
+
+// ============================================================================
+// BLOOD DRIVES
+// ============================================================================
+
+model BloodDrive {
+  id              String    @id @default(cuid())
+  medicalCenterId String
+  createdById     String
+  typeId          String
+  statusId        String
+  title           String
+  description     String?
+  // PostGIS geography for location
+  locationLat     Float?
+  locationLng     Float?
+  locationGeography Unsupported("geography(Point, 4326)")?
+  address         String?
+  city            String?
+  startDateTime   DateTime
+  endDateTime     DateTime?
+  targetDonors    Int?      // Target number of donors
+  actualDonors    Int       @default(0) // Actual number of donors
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime? // Soft delete
+
+  // Relations
+  medicalCenter   MedicalCenter         @relation(fields: [medicalCenterId], references: [id], onDelete: Cascade)
+  createdBy       User                  @relation("CreatedByUser", fields: [createdById], references: [id])
+  type            BloodDriveTypeRef     @relation(fields: [typeId], references: [id])
+  status          BloodDriveStatusRef   @relation(fields: [statusId], references: [id])
+  bloodTypesNeeded BloodDriveBloodType[]
+
+  @@index([medicalCenterId])
+  @@index([createdById])
+  @@index([typeId])
+  @@index([statusId])
+  @@index([startDateTime])
+  @@map("blood_drives")
+}
+
+// Many-to-many: Blood Drive <-> Blood Types
+model BloodDriveBloodType {
+  id           String   @id @default(cuid())
+  bloodDriveId String
+  bloodTypeId  String
+  quantity     Int?     // How many units needed
+  createdAt    DateTime @default(now())
+
+  // Relations
+  bloodDrive BloodDrive   @relation(fields: [bloodDriveId], references: [id], onDelete: Cascade)
+  bloodType  BloodTypeRef @relation(fields: [bloodTypeId], references: [id])
+
+  @@unique([bloodDriveId, bloodTypeId])
+  @@index([bloodDriveId])
+  @@index([bloodTypeId])
+  @@map("blood_drive_blood_types")
+}
+
+// ============================================================================
+// DONATION & VERIFICATION RECORDS
+// ============================================================================
+
+model DonationRecord {
+  id              String    @id @default(cuid())
+  profileId       String // Donor profile
+  medicalCenterId String
+  recordedById    String // Staff who recorded
+  bloodTypeId     String
+  donationDate    DateTime
+  volumeMl        Int
+  hemoglobinLevel Float? // g/dL
+  bloodPressure   String? // e.g., "120/80"
+  notes           String?
+  certificateUrl  String? // PDF certificate
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime? // Soft delete
+
+  // Relations
+  profile       Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  medicalCenter MedicalCenter @relation(fields: [medicalCenterId], references: [id])
+  recordedBy    User          @relation("RecordedByUser", fields: [recordedById], references: [id])
+  bloodType     BloodTypeRef  @relation(fields: [bloodTypeId], references: [id])
+
+  @@index([profileId])
+  @@index([medicalCenterId])
+  @@index([recordedById])
+  @@index([donationDate])
+  @@map("donation_records")
+}
+
+model VerificationRecord {
+  id              String    @id @default(cuid())
+  profileId       String // Donor profile
+  medicalCenterId String
+  verifiedById    String // Staff who verified
+  bloodTypeId     String
+  isEligible      Boolean
+  weight          Float? // kg
+  hemoglobinLevel Float? // g/dL
+  bloodPressure   String? // e.g., "120/80"
+  certificateUrl  String? // Medical certificate
+  notes           String?
+  verifiedAt      DateTime  @default(now())
+  expiresAt       DateTime? // Verification expiry
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime? // Soft delete
+
+  // Relations
+  profile       Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  medicalCenter MedicalCenter @relation(fields: [medicalCenterId], references: [id])
+  verifiedBy    User          @relation("VerifiedByUser", fields: [verifiedById], references: [id])
+  bloodType     BloodTypeRef  @relation(fields: [bloodTypeId], references: [id])
+
+  @@index([profileId])
+  @@index([medicalCenterId])
+  @@index([verifiedById])
+  @@index([verifiedAt])
+  @@map("verification_records")
+}
+
+// ============================================================================
+// ACTIVITY LOGS & AUDIT
+// ============================================================================
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String // e.g., "created_blood_drive", "verified_donor"
+  entityType String? // e.g., "BloodDrive", "DonationRecord"
+  entityId   String?
+  metadata   Json? // Additional context
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// ============================================================================
+// INFORMATIONAL CONTENT
+// ============================================================================
+
+model InformationRecord {
+  id          String    @id @default(cuid())
+  createdById String
+  title       String
+  slug        String    @unique
+  content     String // Markdown or HTML
+  category    String?
+  tags        String[] // Array of tags
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  viewCount   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime? // Soft delete
+
+  // Relations
+  createdBy SystemAdmin @relation(fields: [createdById], references: [id])
+
+  @@index([slug])
+  @@index([isPublished])
+  @@index([category])
+  @@map("information_records")
+}
+
+// ============================================================================
+// AUTHENTICATION & SESSIONS (Lucia Auth)
+// ============================================================================
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  typeId    String
+  title     String
+  message   String
+  isRead    Boolean   @default(false)
+  metadata  Json? // Additional data
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  // Relations
+  user User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type NotificationTypeRef @relation(fields: [typeId], references: [id])
+
+  @@index([userId])
+  @@index([typeId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// ============================================================================
+// USER SUSPENSION LOGS
+// ============================================================================
+
+model SuspensionLog {
+  id            String    @id @default(cuid())
+  userId        String
+  suspendedById String
+  reason        String
+  suspendedAt   DateTime  @default(now())
+  unsuspendedAt DateTime?
+  isActive      Boolean   @default(true)
+
+  // Relations
+  user        User @relation("SuspendedUser", fields: [userId], references: [id], onDelete: Cascade)
+  suspendedBy User @relation("SuspendedByAdmin", fields: [suspendedById], references: [id])
+
+  @@index([userId])
+  @@index([suspendedById])
+  @@index([isActive])
+  @@map("suspension_logs")
+}
