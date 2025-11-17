@@ -40,12 +40,20 @@ export default () => ({
   },
 
   email: {
+    // Mailjet API (preferred)
+    mailjetApiKey: process.env.MAILJET_API_KEY,
+    mailjetSecretKey: process.env.MAILJET_SECRET_KEY,
+
+    // SMTP fallback
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT || '587', 10),
     secure: process.env.EMAIL_SECURE === 'true',
     user: process.env.EMAIL_USER,
     password: process.env.EMAIL_PASSWORD,
-    from: process.env.EMAIL_FROM || '"HemaWeb" <noreply@hemaweb.world>',
+
+    // From address
+    from: process.env.EMAIL_FROM || 'noreply@hemaweb.world',
+    fromName: process.env.EMAIL_FROM_NAME || 'HemaWeb',
   },
 });
 
