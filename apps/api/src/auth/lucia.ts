@@ -1,6 +1,6 @@
 import { Lucia } from 'lucia';
 import { PrismaAdapter } from '@lucia-auth/adapter-prisma';
-import type { PrismaClient } from '@hemaweb/database';
+import type { PrismaClient } from '@prisma/client';
 
 // Initialize Prisma adapter for Lucia
 function createLuciaAdapter(prisma: PrismaClient) {
