@@ -12,7 +12,11 @@
   ],
   "scripts": {
     "dev": "turbo run dev",
+    "dev:web": "pnpm --filter @hemaweb/web dev",
+    "dev:api": "pnpm --filter api dev",
     "build": "turbo run build",
+    "build:web": "pnpm --filter @hemaweb/web build",
+    "build:api": "pnpm --filter api build",
     "start": "turbo run start",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
