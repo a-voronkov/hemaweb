@@ -25,8 +25,9 @@ We use **latest stable versions** of all dependencies to ensure:
 - `@nestjs/swagger`: ^11.2.2
 
 **Database:**
-- `@prisma/client`: ^6.19.0 (latest stable, was 5.8.1)
-- `prisma`: ^6.19.0
+- `@prisma/client`: ^5.22.0 (v5 for Lucia compatibility)
+- `prisma`: ^5.22.0
+- **Note:** Using Prisma 5.x for compatibility with Lucia Auth v3. Will migrate to Prisma 6.x when implementing custom session management.
 
 **Authentication:**
 - `lucia`: ^3.2.2 (session-based auth)
@@ -135,14 +136,27 @@ pnpm audit fix
 
 ---
 
-## Prisma 6.x Migration
+## Prisma Version Strategy
 
-**Why upgrade from 5.x to 6.x:**
-- ✅ Better TypeScript performance
-- ✅ Improved query engine
-- ✅ Enhanced type safety
-- ✅ Better error messages
-- ✅ Performance improvements
+**Current:** Prisma 5.22.0
+
+**Why not Prisma 6.x yet:**
+- Lucia Auth v3 requires Prisma 4.x or 5.x
+- Lucia v4 is not a library anymore (just learning resources)
+- Need to implement custom session management first
+
+**Migration Plan:**
+1. ✅ Phase 1-4: Use Prisma 5.x + Lucia v3 (current)
+2. ⏳ Phase 5: Implement custom session management (Lucia v4 pattern)
+3. ⏳ Phase 6: Migrate to Prisma 6.x
+4. ⏳ Remove Lucia dependencies
+
+**Prisma 6.x Benefits (when we migrate):**
+- Better TypeScript performance
+- Improved query engine
+- Enhanced type safety
+- Better error messages
+- Performance improvements
 
 **Breaking Changes:**
 - None that affect our codebase

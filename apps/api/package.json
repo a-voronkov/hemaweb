@@ -22,7 +22,7 @@
   "dependencies": {
     "@hemaweb/database": "workspace:*",
     "@lucia-auth/adapter-prisma": "^4.0.1",
-    "@prisma/client": "^6.19.0",
+    "@prisma/client": "^5.22.0",
     "@nestjs/common": "^11.1.9",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.9",
