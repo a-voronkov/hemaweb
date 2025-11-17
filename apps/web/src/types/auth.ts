@@ -2,29 +2,16 @@
  * Authentication Types
  */
 
-export interface User {
-  id: string;
-  email: string;
-  roleId: string;
-  isActive: boolean;
-  isVerified: boolean;
-  lastLoginAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  role: {
-    id: string;
-    code: string;
-    name: string;
-  };
-}
-
 export interface UserProfile {
   id: string;
   userId: string;
-  firstName: string;
-  lastName: string;
-  phone: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  phoneNumber: string | null;
   dateOfBirth: string | null;
+  gender: string | null;
+  address: string | null;
+  bloodType: string | null;
   bloodTypeId: string | null;
   availabilityStatusId: string | null;
   isDonorVerified: boolean;
@@ -34,6 +21,31 @@ export interface UserProfile {
   locationLng: number | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  roleId: string;
+  emailVerified: boolean;
+  isActive: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  role: {
+    id: string;
+    code: string;
+    name: string;
+  };
+  profile: UserProfile | null;
+  // Convenience fields from profile
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber?: string | null;
+  dateOfBirth?: string | null;
+  gender?: string | null;
+  address?: string | null;
+  bloodType?: string | null;
 }
 
 export interface LoginRequest {

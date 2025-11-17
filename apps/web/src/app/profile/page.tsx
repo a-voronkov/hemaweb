@@ -38,7 +38,7 @@ export default function ProfilePage() {
     return null;
   }
 
-  const isVerified = user.role === 'VERIFIED_DONOR';
+  const isVerified = user.role.code === 'VERIFIED_DONOR';
 
   return (
     <MainLayout>

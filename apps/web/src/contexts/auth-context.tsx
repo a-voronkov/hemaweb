@@ -35,7 +35,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       const response = await authApi.getCurrentUser();
-      setUser(response.user);
+      // Add convenience fields from profile
+      const userData = {
+        ...response.user,
+        firstName: response.user.profile?.firstName,
+        lastName: response.user.profile?.lastName,
+        phoneNumber: response.user.profile?.phoneNumber,
+        dateOfBirth: response.user.profile?.dateOfBirth,
+        gender: response.user.profile?.gender,
+        address: response.user.profile?.address,
+        bloodType: response.user.profile?.bloodType,
+      };
+      setUser(userData);
     } catch (err) {
       // User not logged in
       setUser(null);
@@ -49,7 +60,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       setLoading(true);
       const response = await authApi.login(data);
-      setUser(response.user);
+      const userData = {
+        ...response.user,
+        firstName: response.user.profile?.firstName,
+        lastName: response.user.profile?.lastName,
+        phoneNumber: response.user.profile?.phoneNumber,
+        dateOfBirth: response.user.profile?.dateOfBirth,
+        gender: response.user.profile?.gender,
+        address: response.user.profile?.address,
+        bloodType: response.user.profile?.bloodType,
+      };
+      setUser(userData);
     } catch (err: any) {
       setError(err.message || 'Login failed');
       throw err;
@@ -63,7 +84,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       setLoading(true);
       const response = await authApi.register(data);
-      setUser(response.user);
+      const userData = {
+        ...response.user,
+        firstName: response.user.profile?.firstName,
+        lastName: response.user.profile?.lastName,
+        phoneNumber: response.user.profile?.phoneNumber,
+        dateOfBirth: response.user.profile?.dateOfBirth,
+        gender: response.user.profile?.gender,
+        address: response.user.profile?.address,
+        bloodType: response.user.profile?.bloodType,
+      };
+      setUser(userData);
     } catch (err: any) {
       setError(err.message || 'Registration failed');
       throw err;
