@@ -43,9 +43,9 @@ export default function StaffDashboardPage() {
   const loadDashboard = async () => {
     try {
       const [centerRes, donationsRes, donorsRes] = await Promise.all([
-        apiClient.get('/medical-centers/staff/my-center'),
-        apiClient.get('/medical-centers/staff/donations'),
-        apiClient.get('/medical-centers/staff/donors'),
+        apiClient.get<{ data: any }>('/medical-centers/staff/my-center'),
+        apiClient.get<{ data: any[] }>('/medical-centers/staff/donations'),
+        apiClient.get<{ data: any[] }>('/medical-centers/staff/donors'),
       ]);
 
       setCenter(centerRes.data);

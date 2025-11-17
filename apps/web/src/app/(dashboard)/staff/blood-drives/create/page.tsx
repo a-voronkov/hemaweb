@@ -13,6 +13,18 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { apiClient } from '@/lib/api/client';
 import Link from 'next/link';
 
+interface BloodTypeRef {
+  id: string;
+  code: string;
+  name: string;
+}
+
+interface BloodDriveTypeRef {
+  id: string;
+  code: string;
+  name: string;
+}
+
 export default function CreateBloodDrivePage() {
   const router = useRouter();
   
@@ -20,8 +32,8 @@ export default function CreateBloodDrivePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  const [bloodTypes, setBloodTypes] = useState<any[]>([]);
-  const [driveTypes, setDriveTypes] = useState<any[]>([]);
+  const [bloodTypes, setBloodTypes] = useState<BloodTypeRef[]>([]);
+  const [driveTypes, setDriveTypes] = useState<BloodDriveTypeRef[]>([]);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -41,10 +53,10 @@ export default function CreateBloodDrivePage() {
   const loadReferenceData = async () => {
     try {
       const [bloodTypesRes, driveTypesRes] = await Promise.all([
-        apiClient.get('/reference/blood-types'),
-        apiClient.get('/reference/blood-drive-types'),
+        apiClient.get<{ data: BloodTypeRef[] }>('/reference/blood-types'),
+        apiClient.get<{ data: BloodDriveTypeRef[] }>('/reference/blood-drive-types'),
       ]);
-      
+
       setBloodTypes(bloodTypesRes.data || []);
       setDriveTypes(driveTypesRes.data || []);
     } catch (err) {
