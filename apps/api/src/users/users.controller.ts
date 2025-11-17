@@ -74,7 +74,10 @@ export class UsersController {
     @Query('q') query: string,
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
-  ) {
+  ): Promise<{
+    data: any[];
+    meta: { total: number; page: number; limit: number; totalPages: number };
+  }> {
     return this.usersService.searchUsers(
       query,
       parseInt(page, 10),

@@ -58,7 +58,7 @@ export class UsersService {
     }
 
     // Update profile
-    const updatedProfile = await this.prisma.userProfile.update({
+    const updatedProfile = await this.prisma.profile.update({
       where: { userId },
       data: {
         ...updateProfileDto,
@@ -115,7 +115,10 @@ export class UsersService {
   /**
    * Search users (admin only)
    */
-  async searchUsers(query: string, page: number = 1, limit: number = 10) {
+  async searchUsers(query: string, page: number = 1, limit: number = 10): Promise<{
+    data: any[];
+    meta: { total: number; page: number; limit: number; totalPages: number };
+  }> {
     const skip = (page - 1) * limit;
 
     const [users, total] = await Promise.all([
