@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Put, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { MedicalCentersService } from './medical-centers.service';
-import { AuthGuard } from '../auth/auth.guard';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @ApiTags('Medical Centers')
 @Controller('medical-centers')
@@ -11,7 +11,7 @@ export class MedicalCentersController {
   @Get()
   @ApiOperation({ summary: 'Get all medical centers' })
   @ApiResponse({ status: 200, description: 'Medical centers retrieved' })
-  async getAllCenters() {
+  async getAllCenters(): Promise<{ data: any[] }> {
     return this.medicalCentersService.getAllCenters();
   }
 
@@ -19,7 +19,7 @@ export class MedicalCentersController {
   @ApiOperation({ summary: 'Get medical center by ID' })
   @ApiResponse({ status: 200, description: 'Medical center retrieved' })
   @ApiResponse({ status: 404, description: 'Medical center not found' })
-  async getCenterById(@Param('id') id: string) {
+  async getCenterById(@Param('id') id: string): Promise<{ data: any }> {
     return this.medicalCentersService.getCenterById(id);
   }
 
@@ -28,7 +28,7 @@ export class MedicalCentersController {
   @ApiResponse({ status: 200, description: 'Nearby medical centers retrieved' })
   async searchNearby(
     @Body() body: { lat: number; lng: number; radiusKm?: number }
-  ) {
+  ): Promise<{ data: any[] }> {
     return this.medicalCentersService.searchNearby(
       body.lat,
       body.lng,
@@ -73,7 +73,7 @@ export class MedicalCentersController {
       volumeMl: number;
       notes?: string;
     }
-  ) {
+  ): Promise<{ message: string; donation: any }> {
     return this.medicalCentersService.recordDonation(
       req.user.id,
       body.donorUserId,
@@ -89,7 +89,7 @@ export class MedicalCentersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get my medical center (staff/admin)' })
   @ApiResponse({ status: 200, description: 'Medical center retrieved' })
-  async getMyCenterAsStaff(@Request() req) {
+  async getMyCenterAsStaff(@Request() req): Promise<{ data: any }> {
     return this.medicalCentersService.getStaffCenter(req.user.id);
   }
 

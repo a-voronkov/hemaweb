@@ -8,7 +8,7 @@ export class MedicalCentersService {
   /**
    * Get all active medical centers
    */
-  async getAllCenters() {
+  async getAllCenters(): Promise<{ data: any[] }> {
     const centers = await this.prisma.medicalCenter.findMany({
       where: { isActive: true },
       include: {
@@ -28,7 +28,7 @@ export class MedicalCentersService {
   /**
    * Get medical center by ID
    */
-  async getCenterById(id: string) {
+  async getCenterById(id: string): Promise<{ data: any }> {
     const center = await this.prisma.medicalCenter.findUnique({
       where: { id },
       include: {
@@ -46,7 +46,7 @@ export class MedicalCentersService {
   /**
    * Search medical centers by location
    */
-  async searchNearby(lat: number, lng: number, radiusKm: number = 10) {
+  async searchNearby(lat: number, lng: number, radiusKm: number = 10): Promise<{ data: any[] }> {
     // Using PostGIS ST_DWithin for radius search
     // Note: This is a simplified version. In production, use proper PostGIS queries
     const centers = await this.prisma.medicalCenter.findMany({
@@ -158,7 +158,7 @@ export class MedicalCentersService {
     bloodTypeId: string,
     volumeMl: number,
     notes?: string
-  ) {
+  ): Promise<{ message: string; donation: any }> {
     // Check if staff has permission
     const staff = await this.prisma.medicalCenterStaff.findUnique({
       where: { userId: staffUserId },
@@ -240,7 +240,7 @@ export class MedicalCentersService {
   /**
    * Get staff's medical center
    */
-  async getStaffCenter(userId: string) {
+  async getStaffCenter(userId: string): Promise<{ data: any }> {
     const staff = await this.prisma.medicalCenterStaff.findUnique({
       where: { userId },
       include: {
@@ -262,13 +262,13 @@ export class MedicalCentersService {
   /**
    * Get donors at staff's center
    */
-  async getCenterDonors(userId: string) {
+  async getCenterDonors(userId: string): Promise<{ data: any[] }> {
     const staff = await this.prisma.medicalCenterStaff.findUnique({
       where: { userId },
     });
 
-    if (!staff) {
-      throw new ForbiddenException('Staff profile not found');
+    if (!staff || !staff.medicalCenterId) {
+      throw new ForbiddenException('Staff profile not found or not assigned to a center');
     }
 
     const verifications = await this.prisma.verificationRecord.findMany({
@@ -303,13 +303,13 @@ export class MedicalCentersService {
   /**
    * Get donations at staff's center
    */
-  async getCenterDonations(userId: string) {
+  async getCenterDonations(userId: string): Promise<{ data: any[] }> {
     const staff = await this.prisma.medicalCenterStaff.findUnique({
       where: { userId },
     });
 
-    if (!staff) {
-      throw new ForbiddenException('Staff profile not found');
+    if (!staff || !staff.medicalCenterId) {
+      throw new ForbiddenException('Staff profile not found or not assigned to a center');
     }
 
     const donations = await this.prisma.donationRecord.findMany({
