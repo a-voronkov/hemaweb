@@ -53,7 +53,7 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      await apiClient.post('/auth/reset-password', { token, password });
+      await apiClient.post('/auth/reset-password', { token, newPassword: password });
       setSuccess(true);
       
       // Redirect to login after 2 seconds
