@@ -9,35 +9,13 @@ export function Footer() {
   return (
     <footer className="border-t bg-background">
       <div className="container px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* About */}
           <div>
             <h3 className="font-semibold mb-3">About HemaWeb</h3>
             <p className="text-sm text-muted-foreground">
               Connecting hospitals with verified blood donors to save lives across Thailand.
             </p>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h3 className="font-semibold mb-3">Quick Links</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/about" className="text-muted-foreground hover:text-foreground">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/how-it-works" className="text-muted-foreground hover:text-foreground">
-                  How It Works
-                </Link>
-              </li>
-              <li>
-                <Link href="/faq" className="text-muted-foreground hover:text-foreground">
-                  FAQ
-                </Link>
-              </li>
-            </ul>
           </div>
 
           {/* Contact */}
@@ -52,6 +30,14 @@ export function Footer() {
 
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} HemaWeb. All rights reserved.</p>
+          <div className="mt-2 space-x-4">
+            <Link href="/terms" className="hover:text-foreground">
+              Terms of Service
+            </Link>
+            <Link href="/privacy" className="hover:text-foreground">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
