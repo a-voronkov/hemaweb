@@ -187,11 +187,12 @@ model Profile {
   updatedAt             DateTime  @updatedAt
 
   // Relations
-  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  bloodType           BloodTypeRef?          @relation(fields: [bloodTypeId], references: [id])
-  availabilityStatus  AvailabilityStatusRef? @relation(fields: [availabilityStatusId], references: [id])
+  user                User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bloodType           BloodTypeRef?            @relation(fields: [bloodTypeId], references: [id])
+  availabilityStatus  AvailabilityStatusRef?   @relation(fields: [availabilityStatusId], references: [id])
   verificationRecords VerificationRecord[]
   donationRecords     DonationRecord[]
+  bloodDriveRegistrations BloodDriveRegistration[]
 
   @@index([userId])
   @@index([bloodTypeId])
@@ -323,6 +324,7 @@ model BloodDrive {
   endDateTime     DateTime?
   targetDonors    Int?      // Target number of donors
   actualDonors    Int       @default(0) // Actual number of donors
+  radiusKm        Float?    @default(10) // Notification radius
   notes           String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -334,6 +336,7 @@ model BloodDrive {
   type            BloodDriveTypeRef     @relation(fields: [typeId], references: [id])
   status          BloodDriveStatusRef   @relation(fields: [statusId], references: [id])
   bloodTypesNeeded BloodDriveBloodType[]
+  registrations   BloodDriveRegistration[]
 
   @@index([medicalCenterId])
   @@index([createdById])
@@ -359,6 +362,26 @@ model BloodDriveBloodType {
   @@index([bloodDriveId])
   @@index([bloodTypeId])
   @@map("blood_drive_blood_types")
+}
+
+// Blood Drive Registrations
+model BloodDriveRegistration {
+  id           String   @id @default(cuid())
+  bloodDriveId String
+  profileId    String
+  status       String   @default("registered") // registered, attended, cancelled
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  bloodDrive BloodDrive @relation(fields: [bloodDriveId], references: [id], onDelete: Cascade)
+  profile    Profile    @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([bloodDriveId, profileId])
+  @@index([bloodDriveId])
+  @@index([profileId])
+  @@map("blood_drive_registrations")
 }
 
 // ============================================================================

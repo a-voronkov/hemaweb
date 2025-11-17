@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ReferenceModule } from './reference/reference.module';
 import { MedicalCentersModule } from './medical-centers/medical-centers.module';
+import { BloodDrivesModule } from './blood-drives/blood-drives.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -20,6 +21,7 @@ import configuration from './config/configuration';
     UsersModule,
     ReferenceModule,
     MedicalCentersModule,
+    BloodDrivesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
