@@ -66,7 +66,7 @@ export default function BloodDrivesListPage() {
     });
   };
 
-  const getStatusColor = (statusCode: string) => {
+  const getStatusColor = (statusCode?: string) => {
     switch (statusCode) {
       case 'upcoming': return 'bg-blue-100 text-blue-800';
       case 'active': return 'bg-green-100 text-green-800';
