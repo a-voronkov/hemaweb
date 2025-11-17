@@ -2,11 +2,30 @@
 
 > Blood Donation Platform connecting hospitals with verified donors
 
+**🌐 Live API:** https://hemaweb.world/api
+**📚 API Docs:** https://hemaweb.world/api/docs
+**📊 Status:** Phase 3 Complete (30% of total project)
+
 HemaWeb is a web-based platform that connects hospitals and medical centers with verified blood donors. It is designed to help reduce chronic blood shortages (initially focusing on Thailand) by making it easier to:
 
 - Find eligible donors near active blood drives or urgent requests
 - Keep donors informed, engaged and reminded about when they can donate
 - Give hospitals a structured view of donors, verifications and donation history
+
+## 🎯 Current Status
+
+**Completed:**
+- ✅ Phase 1: Infrastructure & Database (Week 1-2)
+- ✅ Phase 2: Core Backend Foundation (Week 2-3)
+- ✅ Phase 3: User Management & Authentication (Week 3)
+
+**In Progress:**
+- 🚧 Phase 4: Frontend Foundation (Week 4-5)
+
+**Coming Next:**
+- ⏳ Phase 5: Blood Drive Management
+- ⏳ Phase 6: Donation Tracking
+- ⏳ Phase 7: Notifications & Gamification
 
 ## 🚀 Quick Start
 

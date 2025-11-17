@@ -1,5 +1,14 @@
 # HemaWeb Development Plan
 
+**Last Updated:** 2025-11-17
+**Current Phase:** Phase 4 - Frontend Foundation
+**Progress:** 30% Complete
+
+**Live API:** https://hemaweb.world/api
+**API Docs:** https://hemaweb.world/api/docs
+
+---
+
 ## Technology Stack
 
 ```yaml
