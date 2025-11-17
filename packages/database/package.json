@@ -19,15 +19,15 @@
     "reset": "prisma migrate reset --force"
   },
   "dependencies": {
-    "@prisma/client": "^5.8.1",
-    "prisma": "^5.8.1"
+    "@prisma/client": "^6.19.0",
+    "prisma": "^6.19.0"
   },
   "devDependencies": {
     "@hemaweb/config": "workspace:*",
-    "@types/node": "^20.10.6",
-    "prisma": "^5.8.1",
-    "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "@types/node": "^22.10.0",
+    "prisma": "^6.19.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.2"
   }
 }
 
