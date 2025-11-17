@@ -25,7 +25,7 @@ export default function VerifyEmailPage() {
       }
 
       try {
-        const response = await apiClient.get(`/auth/verify-email?token=${token}`);
+        const response = await apiClient.get<{ message?: string }>(`/auth/verify-email?token=${token}`);
         setStatus('success');
         setMessage(response.message || 'Email verified successfully!');
         
