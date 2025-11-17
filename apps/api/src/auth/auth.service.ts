@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { createLucia } from './lucia';
+import { VerificationService } from './verification.service';
 import type { User, Session } from 'lucia';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
+    private verificationService: VerificationService,
   ) {
     this.lucia = createLucia(this.prisma);
   }
@@ -61,6 +63,14 @@ export class AuthService {
         profile: true,
       },
     });
+
+    // Send verification email
+    try {
+      await this.verificationService.sendVerificationEmail(user.id);
+    } catch (error) {
+      // Log error but don't fail registration
+      console.error('Failed to send verification email:', error);
+    }
 
     return {
       id: user.id,
