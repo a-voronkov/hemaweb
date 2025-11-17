@@ -64,8 +64,9 @@ docker/postgres/data/
 docker/redis/data/
 
 # Prisma
-packages/database/prisma/migrations/*
-!packages/database/prisma/migrations/.gitkeep
+# Migrations should be committed to version control
+# packages/database/prisma/migrations/*
+# !packages/database/prisma/migrations/.gitkeep
 
 # Temporary files
 *.tmp
