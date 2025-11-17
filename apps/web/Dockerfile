@@ -54,7 +54,7 @@ RUN pnpm prisma generate
 WORKDIR /app
 COPY --from=builder /app/apps/web/.next ./apps/web/.next
 COPY --from=builder /app/apps/web/public ./apps/web/public
-COPY --from=builder /app/apps/web/next.config.ts ./apps/web/
+COPY --from=builder /app/apps/web/next.config.mjs ./apps/web/
 
 # Set port
 ENV PORT=3000
