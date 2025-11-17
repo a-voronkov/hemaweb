@@ -18,9 +18,9 @@ We use **latest stable versions** of all dependencies to ensure:
 ### Backend (API)
 
 **Framework:**
-- `@nestjs/core`: ^11.0.8 (latest stable)
-- `@nestjs/common`: ^11.0.8
-- `@nestjs/platform-express`: ^11.0.8
+- `@nestjs/core`: ^11.1.9 (latest stable)
+- `@nestjs/common`: ^11.1.9
+- `@nestjs/platform-express`: ^11.1.9
 - `@nestjs/config`: ^4.0.2
 - `@nestjs/swagger`: ^11.2.2
 
@@ -47,9 +47,9 @@ We use **latest stable versions** of all dependencies to ensure:
 ### Frontend (Web)
 
 **Framework:**
-- `next`: 15.1.6 (stable, not 16.x canary)
-- `react`: 19.0.0 (stable)
-- `react-dom`: 19.0.0
+- `next`: ^16.0.3 (latest stable)
+- `react`: ^19.2.0 (latest stable)
+- `react-dom`: ^19.2.0
 
 **UI Components:**
 - `@radix-ui/react-*`: ^2.1.8 (headless UI primitives)
@@ -69,7 +69,7 @@ We use **latest stable versions** of all dependencies to ensure:
 **Forms:**
 - `react-hook-form`: ^7.54.2
 - `@hookform/resolvers`: ^5.2.2
-- `zod`: ^3.24.1 (schema validation)
+- `zod`: ^4.1.12 (schema validation, latest stable)
 
 **Compiler:**
 - `babel-plugin-react-compiler`: 1.0.0 (React 19 compiler)
@@ -78,10 +78,10 @@ We use **latest stable versions** of all dependencies to ensure:
 
 ## Version Selection Criteria
 
-### 1. Stability Over Bleeding Edge
+### 1. Latest Stable Versions
 - ✅ Use: Latest **stable** releases
-- ❌ Avoid: Canary, beta, RC versions in production
-- Example: Next.js 15.1.6 (stable) instead of 16.0.3 (canary)
+- ✅ TypeScript: Synchronized across monorepo (^5.9.3)
+- ✅ All packages use consistent versions
 
 ### 2. Security First
 - Always use versions with latest security patches
@@ -160,23 +160,29 @@ pnpm audit fix
 
 ---
 
-## Next.js Version Choice
+## Next.js 16
 
-**Why 15.1.6 instead of 16.0.3:**
-- 15.x is **stable** release
-- 16.x is **canary** (experimental)
-- Production apps should use stable
-- Will upgrade to 16.x when it's stable
+**Using 16.0.3:**
+- Latest stable release
+- React 19 support
+- Improved performance
+- Better developer experience
 
 ---
 
-## TypeScript 5.7
+## TypeScript 5.9.3
 
-**New Features:**
-- Better type inference
-- Improved error messages
-- Faster compilation
+**Synchronized across monorepo:**
+- Root: ^5.9.3
+- API: ^5.9.3
+- Web: ^5.9.3
+- Database: ^5.9.3
+
+**Benefits:**
+- Consistent type checking
+- No version conflicts
 - Better IDE support
+- Stable and tested
 
 ---
 
