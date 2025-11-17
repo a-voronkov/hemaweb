@@ -35,6 +35,9 @@ importers:
       '@hemaweb/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@lucia-auth/adapter-prisma':
+        specifier: ^4.0.1
+        version: 4.0.1(@prisma/client@5.22.0)(lucia@3.2.2)
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.1.9(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -1596,6 +1599,17 @@ packages:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
     dev: true
+
+  /@lucia-auth/adapter-prisma@4.0.1(@prisma/client@5.22.0)(lucia@3.2.2):
+    resolution: {integrity: sha512-3SztRhj1RAHbbhI/0aB7YC5zl6Z6aktPhkWpn2CHhiB03B9x/+A+M6pqJuAt1usU8PzkjVilgRPhrPymMar66A==}
+    deprecated: This package has been deprecated. Please see https://lucia-auth.com/lucia-v3/migrate.
+    peerDependencies:
+      '@prisma/client': ^4.2.0 || ^5.0.0
+      lucia: 3.x
+    dependencies:
+      '@prisma/client': 5.22.0(prisma@5.22.0)
+      lucia: 3.2.2
+    dev: false
 
   /@lukeed/csprng@1.1.0:
     resolution: {integrity: sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==}

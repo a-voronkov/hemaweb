@@ -1,6 +1,31 @@
 version: '3.9'
 
 services:
+  # API Backend
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: hemaweb-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3001
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: redis://redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
+      REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://hemaweb.world}
+    networks:
+      - hemaweb-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   # Nginx reverse proxy
   nginx:
     image: nginx:alpine
@@ -18,10 +43,9 @@ services:
     networks:
       - hemaweb-network
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - api
+      - postgres
+      - redis
 
   # Certbot for SSL certificates
   certbot:
