@@ -19,7 +19,8 @@
     "reset": "prisma migrate reset --force"
   },
   "dependencies": {
-    "@prisma/client": "^5.8.1"
+    "@prisma/client": "^5.8.1",
+    "prisma": "^5.8.1"
   },
   "devDependencies": {
     "@hemaweb/config": "workspace:*",
