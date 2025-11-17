@@ -45,10 +45,10 @@
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=20.0.0",
-    "pnpm": ">=8.0.0"
+    "node": ">=24.11.1",
+    "pnpm": ">=10.22.0"
   },
-  "packageManager": "pnpm@8.15.0",
+  "packageManager": "pnpm@10.22.0",
   "workspaces": [
     "apps/*",
     "packages/*"

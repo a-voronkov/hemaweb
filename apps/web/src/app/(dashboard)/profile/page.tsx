@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiClient } from '@/lib/api/client';
 import { useAuth } from '@/hooks/useAuth';
+import type { User } from '@/types/auth';
 
 interface BloodType {
   id: string;
@@ -60,9 +61,9 @@ export default function ProfilePage() {
 
   const loadProfile = async () => {
     try {
-      const response = await apiClient.get('/users/me/profile');
+      const response = await apiClient.get<User>('/users/me/profile');
       const profile = response.profile || response;
-      
+
       setFormData({
         firstName: profile.firstName || '',
         lastName: profile.lastName || '',
@@ -83,12 +84,12 @@ export default function ProfilePage() {
   const loadReferenceData = async () => {
     try {
       const [bloodTypesRes, statusesRes] = await Promise.all([
-        apiClient.get('/reference/blood-types'),
-        apiClient.get('/reference/availability-statuses'),
+        apiClient.get<{ data: BloodType[] }>('/reference/blood-types'),
+        apiClient.get<{ data: AvailabilityStatus[] }>('/reference/availability-statuses'),
       ]);
-      
-      setBloodTypes(bloodTypesRes.data || bloodTypesRes);
-      setAvailabilityStatuses(statusesRes.data || statusesRes);
+
+      setBloodTypes(bloodTypesRes.data);
+      setAvailabilityStatuses(statusesRes.data);
     } catch (err) {
       console.error('Failed to load reference data:', err);
     }
