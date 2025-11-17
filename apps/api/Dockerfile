@@ -55,6 +55,10 @@ COPY --from=builder /app/packages/database/dist ./packages/database/dist
 COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
+# Copy entrypoint script
+COPY apps/api/docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
 # Generate Prisma Client in production
 WORKDIR /app/packages/database
 RUN npx prisma generate
@@ -65,6 +69,6 @@ WORKDIR /app/apps/api
 # Expose port
 EXPOSE 3001
 
-# Start application
-CMD ["node", "dist/main.js"]
+# Use entrypoint script
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
