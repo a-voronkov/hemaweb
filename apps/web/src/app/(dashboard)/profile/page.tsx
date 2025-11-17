@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiClient } from '@/lib/api/client';
 import { useAuth } from '@/hooks/useAuth';
-import type { User } from '@/types/auth';
 
 interface BloodType {
   id: string;
@@ -22,6 +21,21 @@ interface AvailabilityStatus {
   id: string;
   code: string;
   name: string;
+}
+
+interface ProfileFields {
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  dateOfBirth?: string | null;
+  bloodTypeId?: string | null;
+  availabilityStatusId?: string | null;
+  address?: string | null;
+  city?: string | null;
+}
+
+interface UserProfileResponse extends ProfileFields {
+  profile?: ProfileFields | null;
 }
 
 export default function ProfilePage() {
@@ -61,8 +75,8 @@ export default function ProfilePage() {
 
   const loadProfile = async () => {
     try {
-      const response = await apiClient.get<User>('/users/me/profile');
-      const profile = response.profile || response;
+      const response = await apiClient.get<UserProfileResponse>('/users/me/profile');
+      const profile: ProfileFields = response.profile || response;
 
       setFormData({
         firstName: profile.firstName || '',
