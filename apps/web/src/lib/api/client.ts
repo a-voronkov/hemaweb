@@ -112,3 +112,5 @@ export const api = {
   },
 };
 
+// Export as apiClient for backward compatibility
+export const apiClient = api;
