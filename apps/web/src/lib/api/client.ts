@@ -3,6 +3,8 @@
  * Handles all HTTP requests to the backend API
  */
 
+import type { User } from '@/types/auth';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export class APIError extends Error {
