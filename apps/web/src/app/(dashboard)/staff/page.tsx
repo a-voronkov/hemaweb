@@ -153,6 +153,16 @@ export default function StaffDashboardPage() {
                   Record Donation
                 </Button>
               </Link>
+              <Link href="/staff/blood-drives/create">
+                <Button className="w-full" variant="default">
+                  Create Blood Drive
+                </Button>
+              </Link>
+              <Link href="/staff/blood-drives">
+                <Button className="w-full" variant="outline">
+                  View Blood Drives
+                </Button>
+              </Link>
               <Link href="/staff/donors">
                 <Button className="w-full" variant="outline">
                   View Donors
