@@ -30,7 +30,9 @@ COPY packages/config ./packages/config
 COPY packages/database ./packages/database
 COPY apps/api ./apps/api
 
-ENV PRISMA_ENGINES_MIRROR=file:/app/node_modules/.pnpm/@prisma+engines@5.22.0/node_modules/@prisma/engines \
+ENV PRISMA_QUERY_ENGINE_LIBRARY=/app/node_modules/.pnpm/@prisma+engines@5.22.0/node_modules/@prisma/engines/libquery_engine-linux-musl-openssl-3.0.x.so.node \
+    PRISMA_SCHEMA_ENGINE_BINARY=/app/node_modules/.pnpm/@prisma+engines@5.22.0/node_modules/@prisma/engines/schema-engine \
+    PRISMA_FMT_BINARY=/app/node_modules/.pnpm/@prisma+engines@5.22.0/node_modules/@prisma/engines/prisma-fmt \
     PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 \
     PRISMA_CLIENT_ENGINE_TYPE=binary
 
