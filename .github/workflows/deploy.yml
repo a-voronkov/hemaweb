@@ -10,7 +10,7 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,47 +30,30 @@ jobs:
           ssh root@hemaweb.world << 'ENDSSH'
             set -e
 
-            echo "🚀 Starting deployment..."
-
-            # Navigate to project directory
+            echo "Starting deployment..."
             cd /srv/hemaweb
 
-            # Pull latest changes
-            echo "📥 Pulling latest code from GitHub..."
+            echo "Pulling latest code from GitHub..."
             git fetch origin
             git reset --hard origin/main
             git pull origin main
 
-            # Install/update dependencies
-            echo "📦 Installing dependencies..."
-            pnpm install
-
-            # Generate Prisma Client
-            echo "🔧 Generating Prisma Client..."
-            cd packages/database
-            pnpm prisma generate
-            cd ../..
-
-            # Rebuild containers
-            echo "🔨 Rebuilding containers..."
+            echo "Rebuilding containers..."
             docker compose build web api
 
-            echo "🔄 Restarting services..."
+            echo "Restarting services..."
             docker compose up -d
 
-            # Wait for services to be ready
-            echo "⏳ Waiting for services to start..."
+            echo "Waiting for services to start..."
             sleep 15
 
-            # Check service status
-            echo "✅ Checking service status..."
+            echo "Checking service status..."
             docker compose ps
 
-            # Check API logs
-            echo "📋 Recent API logs..."
+            echo "Recent API logs..."
             docker compose logs api --tail 20
 
-            echo "🎉 Deployment completed successfully!"
+            echo "Deployment completed successfully!"
           ENDSSH
 
       - name: Verify deployment
@@ -89,9 +72,8 @@ jobs:
 
       - name: Notify on success
         if: success()
-        run: echo "✅ Deployment to hemaweb.world successful!"
+        run: echo "Deployment to hemaweb.world successful!"
 
       - name: Notify on failure
         if: failure()
-        run: echo "❌ Deployment to hemaweb.world failed!"
-
+        run: echo "Deployment to hemaweb.world failed!"
