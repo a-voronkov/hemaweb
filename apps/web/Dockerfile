@@ -1,5 +1,5 @@
 # Dependencies stage - cached separately
-FROM node:20-alpine AS deps
+FROM node:24-alpine AS deps
 
 # Install OpenSSL for Prisma
 RUN apk add --no-cache openssl libc6-compat
@@ -18,7 +18,7 @@ COPY packages/database/package.json ./packages/database/
 RUN pnpm install --frozen-lockfile
 
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Build arguments for Next.js public env vars
 ARG NEXT_PUBLIC_API_URL=https://hemaweb.world/api
@@ -64,7 +64,7 @@ WORKDIR /app/apps/web
 RUN pnpm build
 
 # Production stage
-FROM node:20-alpine AS runner
+FROM node:24-alpine AS runner
 
 WORKDIR /app
 

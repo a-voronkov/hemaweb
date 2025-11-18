@@ -1,5 +1,5 @@
 # Dependencies stage - cached separately
-FROM node:20-alpine AS deps
+FROM node:24-alpine AS deps
 
 # Install OpenSSL for Prisma
 RUN apk add --no-cache openssl libc6-compat
@@ -19,7 +19,7 @@ COPY apps/api/package.json ./apps/api/
 RUN pnpm install --frozen-lockfile
 
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:24-alpine AS builder
 
 # Install OpenSSL for Prisma
 RUN apk add --no-cache openssl libc6-compat
@@ -56,7 +56,7 @@ WORKDIR /app/apps/api
 RUN pnpm build
 
 # Production stage
-FROM node:20-alpine
+FROM node:24-alpine
 
 # Install OpenSSL for Prisma
 RUN apk add --no-cache openssl
