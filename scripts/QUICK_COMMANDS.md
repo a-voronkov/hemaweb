@@ -1,240 +1,239 @@
 # Quick Commands Cheatsheet
 
-## SSH подключение
+## SSH Connection
 
 ```bash
-# От пользователя deployer
+# As deployer user
 ssh deployer@hemaweb.world
 
-# От root (если нужно)
+# As root (if needed)
 ssh root@hemaweb.world
 ```
 
 ## GitHub Actions Runner
 
 ```bash
-# Статус
+# Status
 sudo systemctl status actions-runner
 
-# Запустить
+# Start
 sudo systemctl start actions-runner
 
-# Остановить
+# Stop
 sudo systemctl stop actions-runner
 
-# Перезапустить
+# Restart
 sudo systemctl restart actions-runner
 
-# Логи (live)
+# Logs (live)
 sudo journalctl -u actions-runner -f
 
-# Последние 100 строк логов
+# Last 100 lines of logs
 sudo journalctl -u actions-runner -n 100
 ```
 
 ## Docker Compose
 
 ```bash
-# Перейти в папку проекта
+# Navigate to project folder
 cd /srv/hemaweb
 
-# Запустить все сервисы
+# Start all services
 docker compose up -d
 
-# Остановить все сервисы
+# Stop all services
 docker compose down
 
-# Пересобрать и запустить
+# Rebuild and start
 docker compose up -d --build
 
-# Пересобрать только API и Web
+# Rebuild only API and Web
 docker compose build web api
 docker compose up -d web api
 
-# Статус сервисов
+# Service status
 docker compose ps
 
-# Логи всех сервисов
+# All services logs
 docker compose logs -f
 
-# Логи конкретного сервиса
+# Specific service logs
 docker compose logs api -f
 docker compose logs web -f
 docker compose logs postgres -f
 docker compose logs nginx -f
 
-# Последние 50 строк логов
+# Last 50 lines of logs
 docker compose logs api --tail 50
 ```
 
-## База данных
+## Database
 
 ```bash
-# Подключиться к PostgreSQL
+# Connect to PostgreSQL
 docker compose exec postgres psql -U hemaweb -d hemaweb
 
-# Выполнить SQL запрос
+# Execute SQL query
 docker compose exec postgres psql -U hemaweb -d hemaweb -c "SELECT COUNT(*) FROM users;"
 
-# Применить миграции
+# Apply migrations
 docker compose exec api pnpm db:migrate
 
-# Заполнить тестовыми данными
+# Seed with test data
 docker compose exec api pnpm db:seed
 
-# Открыть Prisma Studio (осторожно на проде!)
+# Open Prisma Studio (careful in production!)
 docker compose exec api pnpm db:studio
 
-# Backup базы данных
+# Database backup
 docker compose exec postgres pg_dump -U hemaweb hemaweb > backup_$(date +%Y%m%d_%H%M%S).sql
 
-# Восстановить из backup
+# Restore from backup
 docker compose exec -T postgres psql -U hemaweb -d hemaweb < backup.sql
 ```
 
-## Git операции
+## Git Operations
 
 ```bash
 cd /srv/hemaweb
 
-# Проверить статус
+# Check status
 git status
 
-# Посмотреть последние коммиты
+# View last commits
 git log --oneline -10
 
-# Подтянуть изменения
+# Pull changes
 git pull origin main
 
-# Сбросить локальные изменения
+# Reset local changes
 git reset --hard origin/main
 
-# Посмотреть изменения
+# View changes
 git diff
 ```
 
-## Мониторинг
+## Monitoring
 
 ```bash
-# Использование ресурсов контейнерами
+# Container resource usage
 docker stats
 
-# Размер образов
+# Image sizes
 docker images
 
-# Размер volumes
+# Volume sizes
 docker system df
 
-# Очистка неиспользуемых ресурсов
+# Clean unused resources
 docker system prune -a
 
-# Проверка дискового пространства
+# Check disk space
 df -h
 
-# Использование памяти
+# Memory usage
 free -h
 
-# Процессы
+# Processes
 top
 htop
 ```
 
-## Проверка работоспособности
+## Health Checks
 
 ```bash
-# Проверить API
+# Check API
 curl http://localhost:3001/health
 
-# Проверить Web
+# Check Web
 curl http://localhost:3000
 
-# Проверить через внешний URL
+# Check via external URL
 curl https://hemaweb.world
 curl https://hemaweb.world/api/health
 
-# Проверить SSL сертификат
+# Check SSL certificate
 curl -vI https://hemaweb.world 2>&1 | grep -i "SSL\|TLS"
 ```
 
-## Перезапуск сервисов
+## Service Restart
 
 ```bash
 cd /srv/hemaweb
 
-# Перезапустить все
+# Restart all
 docker compose restart
 
-# Перезапустить конкретный сервис
+# Restart specific service
 docker compose restart api
 docker compose restart web
 docker compose restart nginx
 
-# Полный перезапуск (с пересборкой)
+# Full restart (with rebuild)
 docker compose down
 docker compose build
 docker compose up -d
 ```
 
-## Очистка
+## Cleanup
 
 ```bash
-# Остановить и удалить контейнеры
+# Stop and remove containers
 docker compose down
 
-# Остановить и удалить контейнеры + volumes (ОСТОРОЖНО!)
+# Stop and remove containers + volumes (CAREFUL!)
 docker compose down -v
 
-# Удалить неиспользуемые образы
+# Remove unused images
 docker image prune -a
 
-# Удалить все (ОЧЕНЬ ОСТОРОЖНО!)
+# Remove everything (VERY CAREFUL!)
 docker system prune -a --volumes
 ```
 
-## Права доступа
+## Access Permissions
 
 ```bash
-# Проверить владельца
+# Check ownership
 ls -la /srv/hemaweb
 
-# Изменить владельца на deployer
+# Change ownership to deployer
 sudo chown -R deployer:deployer /srv/hemaweb
 
-# Проверить группы пользователя
+# Check user groups
 groups deployer
 
-# Добавить в группу docker
+# Add to docker group
 sudo usermod -aG docker deployer
 ```
 
-## Переменные окружения
+## Environment Variables
 
 ```bash
-# Редактировать .env
+# Edit .env
 nano /srv/hemaweb/.env
 
-# Посмотреть переменные (без значений)
+# View variables (without values)
 grep -v '^#' /srv/hemaweb/.env | grep -v '^$'
 
-# После изменения .env - перезапустить
+# After changing .env - restart
 docker compose down
 docker compose up -d
 ```
 
-## Экстренные команды
+## Emergency Commands
 
 ```bash
-# Остановить все контейнеры
+# Stop all containers
 docker stop $(docker ps -q)
 
-# Убить все контейнеры
+# Kill all containers
 docker kill $(docker ps -q)
 
-# Перезагрузить сервер
+# Reboot server
 sudo reboot
 
-# Проверить место на диске
+# Check disk usage
 du -sh /srv/hemaweb/*
 du -sh /var/lib/docker/*
 ```
-

@@ -2,9 +2,9 @@
 
 > Blood Donation Platform connecting hospitals with verified donors
 
-**🌐 Live API:** https://hemaweb.world/api
-**📚 API Docs:** https://hemaweb.world/api/docs
-**📊 Status:** All Phases Complete - Ready for Deployment! 🎉
+**Live API:** https://hemaweb.world/api
+**API Docs:** https://hemaweb.world/api/docs
+**Status:** All Phases Complete - Ready for Deployment
 
 HemaWeb is a web-based platform that connects hospitals and medical centers with verified blood donors. It is designed to help reduce chronic blood shortages (initially focusing on Thailand) by making it easier to:
 
@@ -12,19 +12,21 @@ HemaWeb is a web-based platform that connects hospitals and medical centers with
 - Keep donors informed, engaged and reminded about when they can donate
 - Give hospitals a structured view of donors, verifications and donation history
 
-## 🎯 Current Status
+## Current Status
 
 **All Development Phases Completed:**
-- ✅ Phase 1: Infrastructure & Database
-- ✅ Phase 2: Core Backend Foundation
-- ✅ Phase 3: User Management & Authentication
-- ✅ Phase 4: Blood Drive Management
-- ✅ Phase 5: Donation History & Eligibility
-- ✅ Phase 6: Notifications System
-- ✅ Phase 7: Admin Dashboard & Analytics
-- ✅ Phase 8: Maps & Calendar Integration
+
+- Phase 1: Infrastructure & Database
+- Phase 2: Core Backend Foundation
+- Phase 3: User Management & Authentication
+- Phase 4: Blood Drive Management
+- Phase 5: Donation History & Eligibility
+- Phase 6: Notifications System
+- Phase 7: Admin Dashboard & Analytics
+- Phase 8: Maps & Calendar Integration
 
 **Features:**
+
 - 26 pages (donor, staff, admin portals)
 - 60+ API endpoints
 - Interactive map with blood drive locations
@@ -33,7 +35,7 @@ HemaWeb is a web-based platform that connects hospitals and medical centers with
 - Role-based access control
 - Responsive design (desktop & mobile)
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -75,9 +77,9 @@ pnpm dev
 
 - **Frontend**: http://localhost:3000 (Next.js)
 - **Backend API**: http://localhost:3001 (NestJS)
-- **Database**: PostgreSQL on localhost:5432
-- **Redis**: localhost:6379
-- **pgAdmin**: http://localhost:5050 (optional, use `docker-compose --profile tools up`)
+- **Database**: PostgreSQL on `localhost:5432`
+- **Redis**: `localhost:6379`
+- **pgAdmin**: <http://localhost:5050> (optional, use `docker-compose --profile tools up`)
 
 ### Test Accounts
 
@@ -92,7 +94,7 @@ After seeding, you can login with:
 | Donor (verified) | donor1@example.com | Donor123! |
 | Donor (unverified) | donor2@example.com | Donor123! |
 
-## 🏗️ Technology Stack
+## Technology Stack
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
@@ -107,7 +109,7 @@ After seeding, you can login with:
 | **Monorepo** | Turborepo + pnpm | Workspace management |
 | **Deployment** | Docker Compose | Local & production |
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 hemaweb/
@@ -125,7 +127,7 @@ hemaweb/
 └── DEVELOPMENT_PLAN.md   # Detailed development plan
 ```
 
-## 📚 Documentation
+## Documentation
 
 All project documentation derived from the original specification document (**"ITX3007 SE HemaWeb Project Final"**) lives under `./docs`.
 
@@ -156,7 +158,7 @@ All project documentation derived from the original specification document (**"I
 - **Medical staff/admin desktop UI** – [`./docs/ui_medical_staff.md`](./docs/ui_medical_staff.md)
 - **System administrator UI** – [`./docs/ui_system_admin.md`](./docs/ui_system_admin.md)
 
-## 🛠️ Development Commands
+## Development Commands
 
 ```bash
 # Development
@@ -180,16 +182,16 @@ pnpm docker:logs          # View Docker logs
 pnpm docker:clean         # Stop and remove volumes
 ```
 
-## 🎯 Development Phases
+## Development Phases
 
-All 8 development phases completed! See [`FINAL_SUMMARY.md`](./FINAL_SUMMARY.md) for complete feature overview.
+All 8 development phases completed. See [`FINAL_SUMMARY.md`](./FINAL_SUMMARY.md) for complete feature overview.
 
-**Status**: Ready for deployment and testing ✅
+**Status**: Ready for deployment and testing
 
-## 📄 License
+## License
 
 This project is part of an academic assignment for ITX3007 Software Engineering course.
 
-## 🤝 Contributing
+## Contributing
 
 This is an academic project. For questions or suggestions, please open an issue.

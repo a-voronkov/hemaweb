@@ -1,10 +1,10 @@
 # Server Setup Scripts
 
-Скрипты для настройки сервера hemaweb.world
+Scripts for setting up hemaweb.world server
 
-## 1. Настройка GitHub Actions Runner как системного сервиса
+## 1. Setup GitHub Actions Runner as System Service
 
-Запустите на сервере от имени root:
+Run on server as root:
 
 ```bash
 cd /srv/hemaweb/scripts
@@ -12,30 +12,30 @@ chmod +x setup-runner-service.sh
 sudo ./setup-runner-service.sh
 ```
 
-Это создаст systemd сервис, который будет автоматически запускать runner при старте системы и перезапускать его при сбоях.
+This will create a systemd service that automatically starts the runner on system boot and restarts it on failures.
 
-### Управление сервисом
+### Service Management
 
 ```bash
-# Проверить статус
+# Check status
 sudo systemctl status actions-runner
 
-# Остановить
+# Stop
 sudo systemctl stop actions-runner
 
-# Запустить
+# Start
 sudo systemctl start actions-runner
 
-# Перезапустить
+# Restart
 sudo systemctl restart actions-runner
 
-# Просмотр логов
+# View logs
 sudo journalctl -u actions-runner -f
 ```
 
-## 2. Смена владельца папок на deployer
+## 2. Change Folder Ownership to deployer
 
-Запустите на сервере от имени root:
+Run on server as root:
 
 ```bash
 cd /srv/hemaweb/scripts
@@ -43,59 +43,60 @@ chmod +x change-ownership.sh
 sudo ./change-ownership.sh
 ```
 
-Это:
-- Остановит все Docker контейнеры
-- Изменит владельца `/srv/hemaweb` на `deployer:deployer`
-- Изменит владельца всех Docker volumes на `deployer:deployer`
+This will:
 
-## 3. Добавление deployer в группу docker
+- Stop all Docker containers
+- Change ownership of `/srv/hemaweb` to `deployer:deployer`
+- Change ownership of all Docker volumes to `deployer:deployer`
 
-Чтобы пользователь deployer мог управлять Docker без sudo:
+## 3. Add deployer to docker Group
+
+To allow deployer user to manage Docker without sudo:
 
 ```bash
 sudo usermod -aG docker deployer
 ```
 
-После этого deployer нужно выйти и войти снова, чтобы изменения вступили в силу.
+After this, deployer needs to log out and log back in for changes to take effect.
 
-## 4. Настройка GitHub Actions Runner
+## 4. Setup GitHub Actions Runner
 
-1. Перейдите в настройки репозитория на GitHub
+1. Go to repository settings on GitHub
 2. Settings → Actions → Runners → New self-hosted runner
-3. Выберите Linux и следуйте инструкциям для настройки runner
-4. При настройке добавьте label `hemaweb`
-5. После настройки запустите скрипт `setup-runner-service.sh`
+3. Select Linux and follow instructions to setup runner
+4. During setup, add label `hemaweb`
+5. After setup, run script `setup-runner-service.sh`
 
-## 5. Проверка настройки
+## 5. Verify Setup
 
-После выполнения всех шагов проверьте:
+After completing all steps, verify:
 
 ```bash
-# Проверить, что runner работает
+# Check that runner is working
 sudo systemctl status actions-runner
 
-# Проверить, что deployer может управлять Docker
+# Check that deployer can manage Docker
 sudo -u deployer docker ps
 
-# Проверить владельца папок
+# Check folder ownership
 ls -la /srv/hemaweb
 ```
 
-## Структура деплоя
+## Deployment Structure
 
-После настройки деплой работает следующим образом:
+After setup, deployment works as follows:
 
-1. Push в main ветку → GitHub Actions запускает workflow
-2. Workflow выполняется на self-hosted runner (на том же сервере)
-3. Runner выполняет команды от имени deployer:
-   - Подтягивает код из GitHub
-   - Собирает Docker образы
-   - Перезапускает контейнеры
-4. Сервисы обновляются без простоя (благодаря Docker Compose)
+1. Push to main branch → GitHub Actions triggers workflow
+2. Workflow executes on self-hosted runner (on the same server)
+3. Runner executes commands as deployer:
+   - Pulls code from GitHub
+   - Builds Docker images
+   - Restarts containers
+4. Services update without downtime (thanks to Docker Compose)
 
-## Переменные окружения
+## Environment Variables
 
-Создайте файл `.env` в `/srv/hemaweb`:
+Create `.env` file in `/srv/hemaweb`:
 
 ```bash
 # Database
@@ -124,39 +125,38 @@ NEXT_PUBLIC_APP_NAME=HemaWeb
 
 ## Troubleshooting
 
-### Runner не запускается
+### Runner not starting
 
 ```bash
-# Проверить логи
+# Check logs
 sudo journalctl -u actions-runner -n 50
 
-# Проверить права
+# Check permissions
 ls -la /srv/actions-runner
 ```
 
-### Docker не работает для deployer
+### Docker not working for deployer
 
 ```bash
-# Проверить группы пользователя
+# Check user groups
 groups deployer
 
-# Добавить в группу docker
+# Add to docker group
 sudo usermod -aG docker deployer
 
-# Перелогиниться
+# Re-login
 ```
 
-### Контейнеры не запускаются
+### Containers not starting
 
 ```bash
-# Проверить логи
+# Check logs
 docker compose logs
 
-# Проверить статус
+# Check status
 docker compose ps
 
-# Пересобрать
+# Rebuild
 docker compose build --no-cache
 docker compose up -d
 ```
-
