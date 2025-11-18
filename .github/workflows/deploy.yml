@@ -12,13 +12,6 @@ jobs:
     runs-on: [self-hosted, hemaweb]
 
     steps:
-      - name: Clean certbot directories
-        run: |
-          echo "Cleaning certbot directories..."
-          sudo rm -rf /srv/actions-runner/_work/hemaweb/hemaweb/docker/certbot/conf || true
-          sudo rm -rf /srv/actions-runner/_work/hemaweb/hemaweb/docker/certbot/www || true
-          echo "Certbot directories cleaned"
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -60,10 +53,10 @@ jobs:
           echo "Waiting for services to start..."
           sleep 15
 
-      - name: Restart nginx to ensure connectivity
+      - name: Restart traefik to ensure connectivity
         run: |
-          echo "Restarting nginx..."
-          docker compose restart nginx
+          echo "Restarting traefik..."
+          docker compose restart traefik
           sleep 5
 
       - name: Check service status

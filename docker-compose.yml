@@ -19,6 +19,12 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-https://hemaweb.world/api}
       NEXT_PUBLIC_APP_NAME: HemaWeb
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://hemaweb.world}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`hemaweb.world`) || Host(`www.hemaweb.world`)"
+      - "traefik.http.routers.web.entrypoints=websecure"
+      - "traefik.http.routers.web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.web.loadbalancer.server.port=3000"
     networks:
       - hemaweb-network
 
@@ -43,6 +49,12 @@ services:
       REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://hemaweb.world}
       FRONTEND_URL: ${FRONTEND_URL:-https://hemaweb.world}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=(Host(`hemaweb.world`) || Host(`www.hemaweb.world`)) && PathPrefix(`/api`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.api.loadbalancer.server.port=3001"
     networks:
       - hemaweb-network
     depends_on:
@@ -51,20 +63,28 @@ services:
       redis:
         condition: service_healthy
 
-  # Nginx reverse proxy
-  nginx:
-    image: nginx:alpine
-    container_name: hemaweb-nginx
+  # Traefik reverse proxy with automatic SSL
+  traefik:
+    image: traefik:v3.2
+    container_name: hemaweb-traefik
     restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@hemaweb.world}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
     ports:
-      - '80:80'
-      - '443:443'
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./docker/nginx/html:/var/www/html:ro
-      - ./docker/certbot/conf:/etc/letsencrypt:ro
-      - ./docker/certbot/www:/var/www/certbot:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
     networks:
       - hemaweb-network
     depends_on:
@@ -72,17 +92,6 @@ services:
         condition: service_started
       api:
         condition: service_started
-
-  # Certbot for SSL certificates
-  certbot:
-    image: certbot/certbot
-    container_name: hemaweb-certbot
-    volumes:
-      - ./docker/certbot/conf:/etc/letsencrypt
-      - ./docker/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    profiles:
-      - ssl
 
   # PostgreSQL with PostGIS extension
   postgres:
@@ -125,6 +134,8 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  traefik_letsencrypt:
     driver: local
 
 networks:
