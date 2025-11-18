@@ -80,39 +80,54 @@ export const navigationConfig: Record<string, RoleNavigation> = {
     ],
   },
 
-  // Admin Navigation
+  // Admin Navigation (Medical Center Admin)
   admin: {
     primary: [
       {
         label: 'Dashboard',
-        href: '/admin',
-        description: 'Admin dashboard',
-      },
-      {
-        label: 'Medical Centers',
-        href: '/admin/medical-centers',
-        description: 'Manage medical centers',
-      },
-      {
-        label: 'Staff',
         href: '/staff/dashboard',
-        description: 'Staff functions',
+        description: 'Staff dashboard',
+      },
+      {
+        label: 'Verify Donor',
+        href: '/staff/verify-donor',
+        description: 'Verify donor eligibility',
+      },
+      {
+        label: 'Record Donation',
+        href: '/staff/record-donation',
+        description: 'Record a donation',
+      },
+      {
+        label: 'Donors',
+        href: '/staff/donors',
+        description: 'View donors',
+      },
+      {
+        label: 'Blood Drives',
+        href: '/staff/blood-drives',
+        description: 'Manage blood drives',
       },
     ],
   },
 
-  // Super Admin Navigation
+  // Super Admin Navigation (Organization-level)
   super_admin: {
     primary: [
       {
         label: 'Dashboard',
         href: '/admin',
-        description: 'Admin dashboard',
+        description: 'Organization dashboard',
+      },
+      {
+        label: 'My Organization',
+        href: '/super-admin/organization',
+        description: 'Manage my organization',
       },
       {
         label: 'Medical Centers',
-        href: '/admin/medical-centers',
-        description: 'Manage medical centers',
+        href: '/super-admin/centers',
+        description: 'Manage organization centers',
       },
       {
         label: 'Staff',
@@ -122,7 +137,7 @@ export const navigationConfig: Record<string, RoleNavigation> = {
     ],
   },
 
-  // System Admin Navigation
+  // System Admin Navigation (Platform-level)
   system_admin: {
     primary: [
       {
@@ -131,14 +146,9 @@ export const navigationConfig: Record<string, RoleNavigation> = {
         description: 'System dashboard',
       },
       {
-        label: 'Medical Centers',
-        href: '/admin/medical-centers',
-        description: 'Manage all medical centers',
-      },
-      {
         label: 'Organizations',
         href: '/admin/organizations',
-        description: 'Manage organizations',
+        description: 'Manage all organizations',
       },
     ],
   },

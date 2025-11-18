@@ -9,6 +9,7 @@ import { ReferenceModule } from './reference/reference.module';
 import { MedicalCentersModule } from './medical-centers/medical-centers.module';
 import { BloodDrivesModule } from './blood-drives/blood-drives.module';
 import { AdminModule } from './admin/admin.module';
+import { OrganizationsModule } from './organizations/organizations.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -24,6 +25,7 @@ import configuration from './config/configuration';
     MedicalCentersModule,
     BloodDrivesModule,
     AdminModule,
+    OrganizationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
