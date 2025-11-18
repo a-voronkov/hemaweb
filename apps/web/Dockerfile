@@ -11,6 +11,9 @@ ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
@@ -44,6 +47,9 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl
+
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
@@ -55,11 +61,13 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
 
+# Copy Prisma schema before install (needed for postinstall scripts)
+COPY packages/database/prisma ./packages/database/prisma
+
 # Install production dependencies only (--ignore-scripts to skip husky)
 RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
-# Copy Prisma schema and generate client
-COPY packages/database/prisma ./packages/database/prisma
+# Generate Prisma Client
 WORKDIR /app/packages/database
 RUN npx prisma generate
 
