@@ -9,71 +9,68 @@ on:
 jobs:
   deploy:
     name: Deploy to Production
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, hemaweb]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Add server to known hosts
+      - name: Pull latest changes
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H hemaweb.world >> ~/.ssh/known_hosts
+          set -e
+          echo "📥 Pulling latest code..."
+          git fetch origin
+          git reset --hard origin/main
 
-      - name: Deploy to server
+      - name: Build Docker images
         run: |
-          ssh root@hemaweb.world << 'ENDSSH'
-            set -e
+          set -e
+          echo "🔨 Building Docker images..."
+          docker compose build web api
 
-            echo "Starting deployment..."
-            cd /srv/hemaweb
-
-            echo "Pulling latest code from GitHub..."
-            git fetch origin
-            git reset --hard origin/main
-            git pull origin main
-
-            echo "Rebuilding containers..."
-            docker compose build web api
-
-            echo "Restarting services..."
-            docker compose up -d
-
-            echo "Waiting for services to start..."
-            sleep 15
-
-            echo "Checking service status..."
-            docker compose ps
-
-            echo "Recent API logs..."
-            docker compose logs api --tail 20
-
-            echo "Deployment completed successfully!"
-          ENDSSH
-
-      - name: Verify deployment
+      - name: Restart services
         run: |
-          ssh root@hemaweb.world << 'ENDSSH'
-            cd /srv/hemaweb
-            echo "=== Git Status ==="
-            git log --oneline -3
-            echo ""
-            echo "=== Docker Services ==="
-            docker compose ps
-            echo ""
-            echo "=== Database Status ==="
-            docker compose exec -T postgres psql -U hemaweb -d hemaweb -c 'SELECT COUNT(*) as user_count FROM users;' || echo "Database query failed"
-          ENDSSH
+          set -e
+          echo "🔄 Restarting services..."
+          docker compose up -d
+
+      - name: Wait for services
+        run: |
+          echo "⏳ Waiting for services to start..."
+          sleep 15
+
+      - name: Check service status
+        run: |
+          echo "📊 Checking service status..."
+          docker compose ps
+
+      - name: Show recent logs
+        if: always()
+        run: |
+          echo "📋 Recent API logs:"
+          docker compose logs api --tail 20
+          echo ""
+          echo "📋 Recent Web logs:"
+          docker compose logs web --tail 20
+
+      - name: Verify database
+        run: |
+          echo "🗄️ Verifying database connection..."
+          docker compose exec -T postgres psql -U hemaweb -d hemaweb -c 'SELECT COUNT(*) as user_count FROM users;' || echo "⚠️ Database query failed"
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "📝 Deployment Summary"
+          echo "===================="
+          git log --oneline -3
+          echo ""
+          docker compose ps
 
       - name: Notify on success
         if: success()
-        run: echo "Deployment to hemaweb.world successful!"
+        run: echo "✅ Deployment to hemaweb.world successful!"
 
       - name: Notify on failure
         if: failure()
-        run: echo "Deployment to hemaweb.world failed!"
+        run: echo "❌ Deployment to hemaweb.world failed!"

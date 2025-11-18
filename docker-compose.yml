@@ -90,17 +90,15 @@ services:
     container_name: hemaweb-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: hemaweb
-      POSTGRES_PASSWORD: hemaweb_dev_password
-      POSTGRES_DB: hemaweb
+      POSTGRES_USER: ${POSTGRES_USER:-hemaweb}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hemaweb_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-hemaweb}
       PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U hemaweb -d hemaweb']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-hemaweb} -d ${POSTGRES_DB:-hemaweb}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -112,9 +110,7 @@ services:
     image: redis:7-alpine
     container_name: hemaweb-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass hemaweb_redis_password
-    ports:
-      - '6379:6379'
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-hemaweb_redis_password}
     volumes:
       - redis_data:/data
     healthcheck:
@@ -125,34 +121,10 @@ services:
     networks:
       - hemaweb-network
 
-  # pgAdmin for database management (optional, for development)
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: hemaweb-pgadmin
-    restart: unless-stopped
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@hemaweb.local
-      PGADMIN_DEFAULT_PASSWORD: admin
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
-    ports:
-      - '5050:80'
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - hemaweb-network
-    profiles:
-      - tools
-
 volumes:
   postgres_data:
     driver: local
   redis_data:
-    driver: local
-  pgadmin_data:
     driver: local
 
 networks:

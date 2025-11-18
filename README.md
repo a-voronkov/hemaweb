@@ -132,9 +132,15 @@ All project documentation derived from the original specification document (**"I
 ### Quick navigation
 
 - **Documentation index** – [`./docs/README.md`](./docs/README.md)
-- **Deployment guide** – [`./DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md)
-- **Final summary** – [`./FINAL_SUMMARY.md`](./FINAL_SUMMARY.md)
 - **Quick start guide** – [`./docs/QUICK_START.md`](./docs/QUICK_START.md)
+- **Final summary** – [`./FINAL_SUMMARY.md`](./FINAL_SUMMARY.md)
+
+### Production & Deployment
+
+- **Production Setup** – [`./PRODUCTION_SETUP.md`](./PRODUCTION_SETUP.md) - Self-hosted runner setup
+- **Deployment Guide** – [`./DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md) - Detailed deployment instructions
+- **Server Scripts** – [`./scripts/README.md`](./scripts/README.md) - Server setup scripts
+- **Quick Commands** – [`./scripts/QUICK_COMMANDS.md`](./scripts/QUICK_COMMANDS.md) - Command cheatsheet
 
 ### Core documentation
 
