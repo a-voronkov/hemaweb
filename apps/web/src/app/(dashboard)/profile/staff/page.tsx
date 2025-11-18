@@ -148,8 +148,30 @@ export default function StaffProfilePage() {
           </div>
         )}
 
+        {/* System Admin Info */}
+        {isSystemAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                System Administrator
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                <p className="text-sm text-blue-900">
+                  <strong>Platform-wide Access</strong>
+                </p>
+                <p className="text-sm text-blue-700 mt-1">
+                  You have full access to all organizations, medical centers, and system settings.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Organization/Center Info */}
-        {(isSuperAdmin || isSystemAdmin) && profile?.organization && (
+        {isSuperAdmin && profile?.organization && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

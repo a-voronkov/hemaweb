@@ -301,9 +301,19 @@ export class UsersService {
   }
 
   /**
-   * Get staff/admin profile
+   * Get staff/admin profile (including system admin)
    */
   async getStaffProfile(userId: string) {
+    // First check if user is a system admin
+    const systemAdmin = await this.prisma.systemAdmin.findUnique({
+      where: { userId },
+    });
+
+    if (systemAdmin) {
+      return { data: systemAdmin };
+    }
+
+    // Otherwise check medical center staff
     const staff = await this.prisma.medicalCenterStaff.findUnique({
       where: { userId },
       include: {
@@ -324,9 +334,27 @@ export class UsersService {
   }
 
   /**
-   * Update staff/admin profile
+   * Update staff/admin profile (including system admin)
    */
   async updateStaffProfile(userId: string, updateDto: any) {
+    // Check if user is a system admin
+    const systemAdmin = await this.prisma.systemAdmin.findUnique({
+      where: { userId },
+    });
+
+    if (systemAdmin) {
+      const updated = await this.prisma.systemAdmin.update({
+        where: { userId },
+        data: {
+          firstName: updateDto.firstName,
+          lastName: updateDto.lastName,
+          phone: updateDto.phone,
+        },
+      });
+      return updated;
+    }
+
+    // Otherwise update medical center staff
     const staff = await this.prisma.medicalCenterStaff.findUnique({
       where: { userId },
     });
