@@ -83,12 +83,6 @@ jobs:
             echo "=== Docker Services ==="
             docker compose ps
             echo ""
-            echo "=== Frontend Health Check ==="
-            curl -f http://localhost:3000 > /dev/null && echo "✅ Frontend is responding" || echo "❌ Frontend not responding"
-            echo ""
-            echo "=== API Health Check ==="
-            curl -f http://localhost:3001/api > /dev/null && echo "✅ API is responding" || echo "❌ API not responding"
-            echo ""
             echo "=== Database Status ==="
             docker compose exec -T postgres psql -U hemaweb -d hemaweb -c 'SELECT COUNT(*) as user_count FROM users;' || echo "Database query failed"
           ENDSSH
