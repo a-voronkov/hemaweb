@@ -30,6 +30,7 @@ COPY packages/config ./packages/config
 COPY packages/database ./packages/database
 COPY apps/api ./apps/api
 
+ENV PRISMA_ENGINES_MIRROR=https://cache.prisma-engines.prisma.sh
 ENV PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
 ENV PRISMA_CLIENT_ENGINE_TYPE=binary
 
