@@ -33,7 +33,7 @@ COPY packages/database ./packages/database
 
 # Generate Prisma Client
 WORKDIR /app/packages/database
-RUN pnpm prisma generate
+RUN npx prisma generate
 
 # Build Next.js app
 WORKDIR /app/apps/web
@@ -61,7 +61,7 @@ RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 # Copy Prisma schema and generate client
 COPY packages/database/prisma ./packages/database/prisma
 WORKDIR /app/packages/database
-RUN pnpm prisma generate
+RUN npx prisma generate
 
 # Copy built app from builder
 WORKDIR /app
