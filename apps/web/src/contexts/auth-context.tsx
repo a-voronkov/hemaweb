@@ -108,6 +108,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       await authApi.logout();
       setUser(null);
+      // Redirect to home page after logout
+      if (typeof window !== 'undefined') {
+        window.location.href = '/';
+      }
     } catch (err: any) {
       setError(err.message || 'Logout failed');
       throw err;

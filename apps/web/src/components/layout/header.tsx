@@ -2,19 +2,33 @@
 
 /**
  * Header Component
- * Mobile-first navigation header
+ * Mobile-first navigation header with dynamic role-based menu
  */
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { getNavigationForRole } from '@/config/navigation';
+import { Menu, User, LogOut } from 'lucide-react';
 
 export function Header() {
+  const router = useRouter();
   const { user, logout } = useAuth();
+  const navigation = getNavigationForRole(user?.role?.code);
 
   const handleLogout = async () => {
     try {
       await logout();
+      router.push('/');
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -44,45 +58,87 @@ export function Header() {
         </Link>
 
         {/* Navigation */}
-        <nav className="flex items-center space-x-2">
+        <nav className="flex items-center gap-1">
           {user ? (
             <>
-              {['admin', 'super_admin', 'system_admin'].includes(user.role?.code || '') && (
-                <Link href="/admin">
-                  <Button variant="ghost" size="sm">
-                    Admin
-                  </Button>
-                </Link>
-              )}
-              {['staff', 'admin', 'super_admin'].includes(user.role?.code || '') && (
-                <Link href="/staff/dashboard">
-                  <Button variant="ghost" size="sm">
-                    Staff
-                  </Button>
-                </Link>
-              )}
-              {user.role?.code === 'donor' && (
-                <>
-                  <Link href="/blood-drives">
+              {/* Desktop Navigation - Primary Links */}
+              <div className="hidden md:flex items-center gap-1">
+                {navigation.primary.map((item) => (
+                  <Link key={item.href} href={item.href}>
                     <Button variant="ghost" size="sm">
-                      Blood Drives
+                      {item.label}
                     </Button>
                   </Link>
-                  <Link href="/donations">
+                ))}
+              </div>
+
+              {/* Mobile Navigation - Hamburger Menu */}
+              <div className="md:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm">
-                      My Donations
+                      <Menu className="h-5 w-5" />
                     </Button>
-                  </Link>
-                </>
-              )}
-              <Link href="/profile">
-                <Button variant="ghost" size="sm">
-                  Profile
-                </Button>
-              </Link>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                Logout
-              </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Navigation</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {navigation.primary.map((item) => (
+                      <DropdownMenuItem key={item.href} asChild>
+                        <Link href={item.href} className="cursor-pointer">
+                          {item.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                    {navigation.secondary && navigation.secondary.length > 0 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        {navigation.secondary.map((item) => (
+                          <DropdownMenuItem key={item.href} asChild>
+                            <Link href={item.href} className="cursor-pointer">
+                              {item.label}
+                            </Link>
+                          </DropdownMenuItem>
+                        ))}
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm">
+                    <User className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">
+                      {user.profile?.firstName || user.email}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer">
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  {navigation.secondary?.map((item) => (
+                    <DropdownMenuItem key={item.href} asChild>
+                      <Link href={item.href} className="cursor-pointer">
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <>

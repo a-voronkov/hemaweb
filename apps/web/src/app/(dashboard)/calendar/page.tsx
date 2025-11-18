@@ -253,40 +253,6 @@ export default function CalendarPage() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-          <Link href="/donations">
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-              <CardContent className="pt-6">
-                <h3 className="font-semibold mb-2">Donation History</h3>
-                <p className="text-sm text-muted-foreground">
-                  View all your past donations
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="/blood-drives">
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-              <CardContent className="pt-6">
-                <h3 className="font-semibold mb-2">Find Blood Drives</h3>
-                <p className="text-sm text-muted-foreground">
-                  Discover upcoming blood drives
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-          <Link href="/profile">
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
-              <CardContent className="pt-6">
-                <h3 className="font-semibold mb-2">Profile</h3>
-                <p className="text-sm text-muted-foreground">
-                  Manage your donor profile
-                </p>
-              </CardContent>
-            </Card>
-          </Link>
-        </div>
       </div>
     </MainLayout>
   );
