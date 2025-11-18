@@ -55,6 +55,9 @@ COPY --from=deps /app/packages/database/node_modules ./packages/database/node_mo
 COPY apps/web ./apps/web
 COPY packages/database ./packages/database
 
+ENV PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
+ENV PRISMA_CLIENT_ENGINE_TYPE=binary
+
 # Generate Prisma Client
 WORKDIR /app/packages/database
 RUN npx prisma generate
