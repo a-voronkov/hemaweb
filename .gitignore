@@ -49,6 +49,7 @@ lerna-debug.log*
 .turbo
 
 # IDEs
+.augment/*
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
