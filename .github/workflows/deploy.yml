@@ -12,6 +12,15 @@ jobs:
     runs-on: [self-hosted, hemaweb]
 
     steps:
+      - name: Clean workspace
+        run: |
+          echo "🧹 Cleaning workspace..."
+          # Remove docker/certbot/conf which may have root-owned files
+          sudo rm -rf docker/certbot/conf docker/certbot/www || true
+          # Clean the rest
+          rm -rf * .* 2>/dev/null || true
+          echo "✅ Workspace cleaned"
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
