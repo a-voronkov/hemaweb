@@ -338,5 +338,236 @@ export class MedicalCentersService {
 
     return { data: transformed };
   }
+
+  /**
+   * Create medical center (admin only)
+   */
+  async createCenter(data: {
+    name: string;
+    organizationId: string;
+    address?: string;
+    city?: string;
+    phone?: string;
+    email?: string;
+    locationLat?: number;
+    locationLng?: number;
+  }) {
+    const center = await this.prisma.medicalCenter.create({
+      data: {
+        ...data,
+        isActive: true,
+      },
+      include: {
+        organization: true,
+      },
+    });
+
+    return {
+      message: 'Medical center created successfully',
+      data: center,
+    };
+  }
+
+  /**
+   * Update medical center (admin only)
+   */
+  async updateCenter(
+    id: string,
+    data: {
+      name?: string;
+      address?: string;
+      city?: string;
+      phone?: string;
+      email?: string;
+      locationLat?: number;
+      locationLng?: number;
+      isActive?: boolean;
+    }
+  ) {
+    const center = await this.prisma.medicalCenter.findUnique({
+      where: { id },
+    });
+
+    if (!center) {
+      throw new NotFoundException('Medical center not found');
+    }
+
+    const updated = await this.prisma.medicalCenter.update({
+      where: { id },
+      data,
+      include: {
+        organization: true,
+      },
+    });
+
+    return {
+      message: 'Medical center updated successfully',
+      data: updated,
+    };
+  }
+
+  /**
+   * Delete medical center (admin only - soft delete)
+   */
+  async deleteCenter(id: string) {
+    const center = await this.prisma.medicalCenter.findUnique({
+      where: { id },
+    });
+
+    if (!center) {
+      throw new NotFoundException('Medical center not found');
+    }
+
+    await this.prisma.medicalCenter.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        isActive: false,
+      },
+    });
+
+    return {
+      message: 'Medical center deleted successfully',
+    };
+  }
+
+  /**
+   * Get all organizations (for dropdown)
+   */
+  async getAllOrganizations() {
+    const organizations = await this.prisma.organization.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' },
+    });
+
+    return { data: organizations };
+  }
+
+  /**
+   * Get staff dashboard statistics
+   */
+  async getStaffDashboardStats(userId: string) {
+    // Get staff info
+    const staff = await this.prisma.medicalCenterStaff.findUnique({
+      where: { userId },
+      include: {
+        medicalCenter: {
+          include: {
+            organization: true,
+          },
+        },
+      },
+    });
+
+    if (!staff) {
+      throw new NotFoundException('Staff record not found');
+    }
+
+    const centerId = staff.medicalCenterId;
+
+    // Get statistics
+    const [
+      totalDonations,
+      recentDonations,
+      totalBloodDrives,
+      upcomingBloodDrives,
+      activeBloodDrives,
+      verifiedDonors,
+    ] = await Promise.all([
+      // Total donations at this center
+      this.prisma.donationRecord.count({
+        where: {
+          medicalCenterId: centerId,
+          deletedAt: null,
+        },
+      }),
+
+      // Recent donations (last 30 days)
+      this.prisma.donationRecord.count({
+        where: {
+          medicalCenterId: centerId,
+          deletedAt: null,
+          donationDate: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          },
+        },
+      }),
+
+      // Total blood drives
+      this.prisma.bloodDrive.count({
+        where: {
+          medicalCenterId: centerId,
+          deletedAt: null,
+        },
+      }),
+
+      // Upcoming blood drives
+      this.prisma.bloodDrive.count({
+        where: {
+          medicalCenterId: centerId,
+          deletedAt: null,
+          status: { code: 'upcoming' },
+        },
+      }),
+
+      // Active blood drives
+      this.prisma.bloodDrive.count({
+        where: {
+          medicalCenterId: centerId,
+          deletedAt: null,
+          status: { code: 'active' },
+        },
+      }),
+
+      // Verified donors at this center
+      this.prisma.donationRecord.groupBy({
+        by: ['profileId'],
+        where: {
+          medicalCenterId: centerId,
+          deletedAt: null,
+        },
+        _count: true,
+      }),
+    ]);
+
+    // Get blood type distribution
+    const bloodTypeStats = await this.prisma.donationRecord.groupBy({
+      by: ['bloodTypeId'],
+      where: {
+        medicalCenterId: centerId,
+        deletedAt: null,
+      },
+      _count: true,
+    });
+
+    const bloodTypeDistribution = await Promise.all(
+      bloodTypeStats.map(async (item) => {
+        const bloodType = await this.prisma.bloodTypeRef.findUnique({
+          where: { id: item.bloodTypeId },
+        });
+        return {
+          bloodType: bloodType?.name || 'Unknown',
+          count: item._count,
+        };
+      })
+    );
+
+    return {
+      center: {
+        id: staff.medicalCenter.id,
+        name: staff.medicalCenter.name,
+        organization: staff.medicalCenter.organization.name,
+      },
+      stats: {
+        totalDonations,
+        recentDonations,
+        totalBloodDrives,
+        upcomingBloodDrives,
+        activeBloodDrives,
+        uniqueDonors: verifiedDonors.length,
+      },
+      bloodTypeDistribution,
+    };
+  }
 }
 

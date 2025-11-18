@@ -184,6 +184,13 @@ model Profile {
   address               String?
   city                  String?
   country               String?   @default("Thailand")
+  // Notification preferences
+  emailNotifications    Boolean   @default(true) // Receive email notifications
+  notifyBloodDrives     Boolean   @default(true) // Notify about nearby blood drives
+  notifyEligibility     Boolean   @default(true) // Notify when eligible to donate again
+  notificationRadius    Int       @default(10) // Notification radius in km
+  notifyEmergencyOnly   Boolean   @default(false) // Only notify about emergency blood drives
+  notifyMyBloodTypeOnly Boolean   @default(false) // Only notify about my blood type
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 

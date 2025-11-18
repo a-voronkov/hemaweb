@@ -47,6 +47,34 @@ export function Header() {
         <nav className="flex items-center space-x-2">
           {user ? (
             <>
+              {['admin', 'super_admin', 'system_admin'].includes(user.role?.code || '') && (
+                <Link href="/admin">
+                  <Button variant="ghost" size="sm">
+                    Admin
+                  </Button>
+                </Link>
+              )}
+              {['staff', 'admin', 'super_admin'].includes(user.role?.code || '') && (
+                <Link href="/staff/dashboard">
+                  <Button variant="ghost" size="sm">
+                    Staff
+                  </Button>
+                </Link>
+              )}
+              {user.role?.code === 'donor' && (
+                <>
+                  <Link href="/blood-drives">
+                    <Button variant="ghost" size="sm">
+                      Blood Drives
+                    </Button>
+                  </Link>
+                  <Link href="/donations">
+                    <Button variant="ghost" size="sm">
+                      My Donations
+                    </Button>
+                  </Link>
+                </>
+              )}
               <Link href="/profile">
                 <Button variant="ghost" size="sm">
                   Profile

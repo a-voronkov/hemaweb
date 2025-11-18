@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EligibilityStatus } from '@/components/eligibility-status';
 import { apiClient } from '@/lib/api/client';
 import { useAuth } from '@/hooks/useAuth';
+import Link from 'next/link';
 
 interface BloodType {
   id: string;
@@ -143,7 +145,55 @@ export default function ProfilePage() {
 
   return (
     <MainLayout>
-      <div className="container max-w-4xl px-4 py-8">
+      <div className="container max-w-4xl px-4 py-8 space-y-6">
+        {/* Eligibility Status */}
+        <EligibilityStatus />
+
+        {/* Quick Links */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Link href="/donations">
+            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+              <CardContent className="pt-6">
+                <h3 className="font-semibold mb-2">Donation History</h3>
+                <p className="text-sm text-muted-foreground">
+                  View your complete donation history
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/calendar">
+            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+              <CardContent className="pt-6">
+                <h3 className="font-semibold mb-2">Calendar</h3>
+                <p className="text-sm text-muted-foreground">
+                  View your donation calendar
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/blood-drives">
+            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+              <CardContent className="pt-6">
+                <h3 className="font-semibold mb-2">Find Blood Drives</h3>
+                <p className="text-sm text-muted-foreground">
+                  Discover blood drives near you
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/settings/notifications">
+            <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
+              <CardContent className="pt-6">
+                <h3 className="font-semibold mb-2">Notification Settings</h3>
+                <p className="text-sm text-muted-foreground">
+                  Manage your notification preferences
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
+        {/* Profile Form */}
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold">My Profile</CardTitle>

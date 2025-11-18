@@ -167,5 +167,137 @@ export class UsersService {
       },
     };
   }
+
+  /**
+   * Get donation history for current user
+   */
+  async getMyDonationHistory(userId: string, page: number = 1, limit: number = 20): Promise<{
+    data: any[];
+    meta: { total: number; page: number; limit: number; totalPages: number };
+  }> {
+    // Get user's profile
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true },
+    });
+
+    if (!user || !user.profile) {
+      throw new NotFoundException('User profile not found');
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [donations, total] = await Promise.all([
+      this.prisma.donationRecord.findMany({
+        where: {
+          profileId: user.profile.id,
+          deletedAt: null,
+        },
+        include: {
+          bloodType: true,
+          medicalCenter: {
+            include: {
+              organization: true,
+            },
+          },
+          recordedBy: {
+            select: {
+              id: true,
+              email: true,
+              medicalCenterStaff: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { donationDate: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.donationRecord.count({
+        where: {
+          profileId: user.profile.id,
+          deletedAt: null,
+        },
+      }),
+    ]);
+
+    return {
+      data: donations,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /**
+   * Get eligibility status for current user
+   */
+  async getEligibilityStatus(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true },
+    });
+
+    if (!user || !user.profile) {
+      throw new NotFoundException('User profile not found');
+    }
+
+    const profile = user.profile;
+
+    // Check if donor is verified
+    if (!profile.isDonorVerified) {
+      return {
+        isEligible: false,
+        reason: 'not_verified',
+        message: 'You must be verified by a medical center before donating',
+        nextEligibleDate: null,
+        daysUntilEligible: null,
+      };
+    }
+
+    // Check if there's a next eligible date
+    if (!profile.nextEligibleDate) {
+      return {
+        isEligible: true,
+        reason: 'no_previous_donation',
+        message: 'You are eligible to donate',
+        nextEligibleDate: null,
+        daysUntilEligible: 0,
+      };
+    }
+
+    const now = new Date();
+    const nextEligible = new Date(profile.nextEligibleDate);
+
+    // Check if eligible
+    if (now >= nextEligible) {
+      return {
+        isEligible: true,
+        reason: 'eligible',
+        message: 'You are eligible to donate',
+        nextEligibleDate: profile.nextEligibleDate,
+        daysUntilEligible: 0,
+      };
+    }
+
+    // Calculate days until eligible
+    const daysUntilEligible = Math.ceil((nextEligible.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    return {
+      isEligible: false,
+      reason: 'cooldown_period',
+      message: `You must wait ${daysUntilEligible} more days before your next donation`,
+      nextEligibleDate: profile.nextEligibleDate,
+      daysUntilEligible,
+      lastDonationDate: profile.lastDonationDate,
+    };
+  }
 }
 

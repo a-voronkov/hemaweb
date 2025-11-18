@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Put, Body, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { MedicalCentersService } from './medical-centers.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('Medical Centers')
 @Controller('medical-centers')
@@ -109,6 +111,84 @@ export class MedicalCentersController {
   @ApiResponse({ status: 200, description: 'Donations retrieved' })
   async getCenterDonations(@Request() req) {
     return this.medicalCentersService.getCenterDonations(req.user.id);
+  }
+
+  @Get('staff/dashboard/stats')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get staff dashboard statistics' })
+  @ApiResponse({ status: 200, description: 'Statistics retrieved' })
+  async getStaffDashboardStats(@Request() req) {
+    return this.medicalCentersService.getStaffDashboardStats(req.user.id);
+  }
+
+  // Admin endpoints
+  @Post('admin/create')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin', 'system_admin')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create medical center (Admin only)' })
+  @ApiResponse({ status: 201, description: 'Medical center created' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  async createCenter(
+    @Body() body: {
+      name: string;
+      organizationId: string;
+      address?: string;
+      city?: string;
+      phone?: string;
+      email?: string;
+      locationLat?: number;
+      locationLng?: number;
+    }
+  ) {
+    return this.medicalCentersService.createCenter(body);
+  }
+
+  @Put('admin/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin', 'system_admin')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update medical center (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Medical center updated' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({ status: 404, description: 'Medical center not found' })
+  async updateCenter(
+    @Param('id') id: string,
+    @Body() body: {
+      name?: string;
+      address?: string;
+      city?: string;
+      phone?: string;
+      email?: string;
+      locationLat?: number;
+      locationLng?: number;
+      isActive?: boolean;
+    }
+  ) {
+    return this.medicalCentersService.updateCenter(id, body);
+  }
+
+  @Delete('admin/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin', 'system_admin')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete medical center (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Medical center deleted' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({ status: 404, description: 'Medical center not found' })
+  async deleteCenter(@Param('id') id: string) {
+    return this.medicalCentersService.deleteCenter(id);
+  }
+
+  @Get('admin/organizations')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('admin', 'super_admin', 'system_admin')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all organizations (Admin only)' })
+  @ApiResponse({ status: 200, description: 'Organizations retrieved' })
+  async getAllOrganizations() {
+    return this.medicalCentersService.getAllOrganizations();
   }
 }
 

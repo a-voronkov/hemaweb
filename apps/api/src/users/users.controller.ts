@@ -109,5 +109,31 @@ export class UsersController {
   async getUserProfileById(@Param('id') userId: string, @CurrentUser() user: any) {
     return this.usersService.getUserById(userId, user.id);
   }
+
+  @Get('me/donations')
+  @ApiOperation({ summary: 'Get my donation history' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number', example: 1 })
+  @ApiQuery({ name: 'limit', required: false, description: 'Items per page', example: 20 })
+  @ApiResponse({ status: 200, description: 'Donation history retrieved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getMyDonationHistory(
+    @CurrentUser() user: any,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+  ) {
+    return this.usersService.getMyDonationHistory(
+      user.id,
+      parseInt(page, 10),
+      parseInt(limit, 10),
+    );
+  }
+
+  @Get('me/eligibility')
+  @ApiOperation({ summary: 'Get my donation eligibility status' })
+  @ApiResponse({ status: 200, description: 'Eligibility status retrieved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getMyEligibility(@CurrentUser() user: any) {
+    return this.usersService.getEligibilityStatus(user.id);
+  }
 }
 

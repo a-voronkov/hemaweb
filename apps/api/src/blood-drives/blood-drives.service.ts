@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { CreateBloodDriveDto } from './dto/create-blood-drive.dto';
 import { UpdateBloodDriveDto } from './dto/update-blood-drive.dto';
 
 @Injectable()
 export class BloodDrivesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+  ) {}
 
   /**
    * Get all blood drives
@@ -335,9 +339,12 @@ export class BloodDrivesService {
    * Register for blood drive
    */
   async registerForBloodDrive(userId: string, bloodDriveId: string) {
-    // Get donor profile
+    // Get donor profile with user info
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
+      include: {
+        user: true,
+      },
     });
 
     if (!profile) {
@@ -346,6 +353,18 @@ export class BloodDrivesService {
 
     if (!profile.isDonorVerified) {
       throw new BadRequestException('You must be verified before registering for blood drives');
+    }
+
+    // Get blood drive details
+    const bloodDrive = await this.prisma.bloodDrive.findUnique({
+      where: { id: bloodDriveId },
+      include: {
+        medicalCenter: true,
+      },
+    });
+
+    if (!bloodDrive) {
+      throw new NotFoundException('Blood drive not found');
     }
 
     // Check if already registered
@@ -367,6 +386,27 @@ export class BloodDrivesService {
         profileId: profile.id,
       },
     });
+
+    // Send confirmation email
+    try {
+      await this.emailService.sendBloodDriveRegistrationConfirmation(
+        profile.user.email,
+        profile.firstName || 'Donor',
+        {
+          title: bloodDrive.title,
+          startDateTime: bloodDrive.startDateTime.toISOString(),
+          medicalCenter: {
+            name: bloodDrive.medicalCenter.name,
+            address: bloodDrive.medicalCenter.address,
+            city: bloodDrive.medicalCenter.city,
+            phone: bloodDrive.medicalCenter.phone,
+          },
+        },
+      );
+    } catch (error) {
+      // Log error but don't fail registration
+      console.error('Failed to send confirmation email:', error);
+    }
 
     return {
       message: 'Successfully registered for blood drive',

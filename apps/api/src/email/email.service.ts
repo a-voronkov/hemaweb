@@ -202,5 +202,178 @@ export class EmailService {
 
     return this.sendEmail(to, 'Welcome to HemaWeb!', html);
   }
+
+  /**
+   * Send blood drive notification email
+   */
+  async sendBloodDriveNotification(
+    to: string,
+    name: string,
+    bloodDrive: {
+      title: string;
+      startDateTime: string;
+      medicalCenter: { name: string; city?: string };
+      bloodTypesNeeded?: Array<{ bloodType: { name: string } }>;
+    },
+  ) {
+    const driveDate = new Date(bloodDrive.startDateTime).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const bloodTypesHtml = bloodDrive.bloodTypesNeeded?.length
+      ? `
+        <p><strong>Blood Types Needed:</strong></p>
+        <p style="color: #dc2626; font-weight: bold;">
+          ${bloodDrive.bloodTypesNeeded.map((bt) => bt.bloodType.name).join(', ')}
+        </p>
+      `
+      : '';
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>New Blood Drive Near You!</h2>
+        <p>Hi ${name},</p>
+        <p>A new blood drive has been scheduled in your area:</p>
+
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #dc2626;">${bloodDrive.title}</h3>
+          <p><strong>Date & Time:</strong> ${driveDate}</p>
+          <p><strong>Location:</strong> ${bloodDrive.medicalCenter.name}${bloodDrive.medicalCenter.city ? `, ${bloodDrive.medicalCenter.city}` : ''}</p>
+          ${bloodTypesHtml}
+        </div>
+
+        <p>Your donation can save up to 3 lives. Register now to secure your spot!</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${this.config.get('app.frontendUrl')}/blood-drives"
+             style="background-color: #dc2626; color: white; padding: 12px 30px;
+                    text-decoration: none; border-radius: 5px; display: inline-block;">
+            View Blood Drives
+          </a>
+        </div>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="color: #999; font-size: 12px;">
+          You're receiving this email because you're registered as a blood donor.
+          To manage your notification preferences, visit your profile settings.
+        </p>
+      </div>
+    `;
+
+    return this.sendEmail(to, `New Blood Drive: ${bloodDrive.title}`, html);
+  }
+
+  /**
+   * Send donation eligibility reminder
+   */
+  async sendEligibilityReminder(
+    to: string,
+    name: string,
+    nextEligibleDate: string,
+  ) {
+    const eligibleDate = new Date(nextEligibleDate).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>You're Eligible to Donate Again!</h2>
+        <p>Hi ${name},</p>
+        <p>Great news! You're now eligible to donate blood again.</p>
+
+        <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #22c55e;">
+          <p style="margin: 0; font-size: 18px; color: #15803d;">
+            <strong>You can donate starting ${eligibleDate}</strong>
+          </p>
+        </div>
+
+        <p>Your previous donation made a difference, and we hope you'll consider donating again.</p>
+        <p>Find a blood drive near you and schedule your next donation:</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${this.config.get('app.frontendUrl')}/blood-drives"
+             style="background-color: #dc2626; color: white; padding: 12px 30px;
+                    text-decoration: none; border-radius: 5px; display: inline-block;">
+            Find Blood Drives
+          </a>
+        </div>
+
+        <p style="color: #666; font-size: 14px;">
+          Remember: Each donation can save up to 3 lives. Thank you for being a hero!
+        </p>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="color: #999; font-size: 12px;">
+          To manage your notification preferences, visit your profile settings.
+        </p>
+      </div>
+    `;
+
+    return this.sendEmail(to, "You're Eligible to Donate Blood Again!", html);
+  }
+
+  /**
+   * Send blood drive registration confirmation
+   */
+  async sendBloodDriveRegistrationConfirmation(
+    to: string,
+    name: string,
+    bloodDrive: {
+      title: string;
+      startDateTime: string;
+      medicalCenter: { name: string; address?: string; city?: string; phone?: string };
+    },
+  ) {
+    const driveDate = new Date(bloodDrive.startDateTime).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2>Registration Confirmed!</h2>
+        <p>Hi ${name},</p>
+        <p>Thank you for registering for the blood drive. Your registration has been confirmed.</p>
+
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #dc2626;">${bloodDrive.title}</h3>
+          <p><strong>Date & Time:</strong> ${driveDate}</p>
+          <p><strong>Location:</strong> ${bloodDrive.medicalCenter.name}</p>
+          ${bloodDrive.medicalCenter.address ? `<p><strong>Address:</strong> ${bloodDrive.medicalCenter.address}${bloodDrive.medicalCenter.city ? `, ${bloodDrive.medicalCenter.city}` : ''}</p>` : ''}
+          ${bloodDrive.medicalCenter.phone ? `<p><strong>Phone:</strong> ${bloodDrive.medicalCenter.phone}</p>` : ''}
+        </div>
+
+        <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0; color: #92400e;">
+            <strong>Important Reminders:</strong>
+          </p>
+          <ul style="margin: 10px 0; color: #92400e;">
+            <li>Eat a healthy meal before donating</li>
+            <li>Drink plenty of water</li>
+            <li>Bring a valid ID</li>
+            <li>Get a good night's sleep</li>
+          </ul>
+        </div>
+
+        <p>We look forward to seeing you there. Thank you for saving lives!</p>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+        <p style="color: #999; font-size: 12px;">
+          If you need to cancel your registration, please contact the medical center directly.
+        </p>
+      </div>
+    `;
+
+    return this.sendEmail(to, `Blood Drive Registration Confirmed - ${bloodDrive.title}`, html);
+  }
 }
 
