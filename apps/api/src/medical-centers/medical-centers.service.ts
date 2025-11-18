@@ -345,8 +345,8 @@ export class MedicalCentersService {
   async createCenter(data: {
     name: string;
     organizationId: string;
-    address?: string;
-    city?: string;
+    address: string;
+    city: string;
     phone?: string;
     email?: string;
     locationLat?: number;
@@ -435,7 +435,7 @@ export class MedicalCentersService {
    * Get all organizations (for dropdown)
    */
   async getAllOrganizations() {
-    const organizations = await this.prisma.organization.findMany({
+    const organizations = await this.prisma.medicalOrganization.findMany({
       where: { isActive: true },
       orderBy: { name: 'asc' },
     });
@@ -463,6 +463,10 @@ export class MedicalCentersService {
       throw new NotFoundException('Staff record not found');
     }
 
+    if (!staff.medicalCenter) {
+      throw new NotFoundException('Medical center not found for this staff member');
+    }
+
     const centerId = staff.medicalCenterId;
 
     // Get statistics
@@ -477,7 +481,7 @@ export class MedicalCentersService {
       // Total donations at this center
       this.prisma.donationRecord.count({
         where: {
-          medicalCenterId: centerId,
+          medicalCenterId: centerId!,
           deletedAt: null,
         },
       }),
@@ -485,7 +489,7 @@ export class MedicalCentersService {
       // Recent donations (last 30 days)
       this.prisma.donationRecord.count({
         where: {
-          medicalCenterId: centerId,
+          medicalCenterId: centerId!,
           deletedAt: null,
           donationDate: {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
@@ -496,7 +500,7 @@ export class MedicalCentersService {
       // Total blood drives
       this.prisma.bloodDrive.count({
         where: {
-          medicalCenterId: centerId,
+          medicalCenterId: centerId!,
           deletedAt: null,
         },
       }),
@@ -504,7 +508,7 @@ export class MedicalCentersService {
       // Upcoming blood drives
       this.prisma.bloodDrive.count({
         where: {
-          medicalCenterId: centerId,
+          medicalCenterId: centerId!,
           deletedAt: null,
           status: { code: 'upcoming' },
         },
@@ -513,7 +517,7 @@ export class MedicalCentersService {
       // Active blood drives
       this.prisma.bloodDrive.count({
         where: {
-          medicalCenterId: centerId,
+          medicalCenterId: centerId!,
           deletedAt: null,
           status: { code: 'active' },
         },
@@ -523,7 +527,7 @@ export class MedicalCentersService {
       this.prisma.donationRecord.groupBy({
         by: ['profileId'],
         where: {
-          medicalCenterId: centerId,
+          medicalCenterId: centerId!,
           deletedAt: null,
         },
         _count: true,
@@ -534,7 +538,7 @@ export class MedicalCentersService {
     const bloodTypeStats = await this.prisma.donationRecord.groupBy({
       by: ['bloodTypeId'],
       where: {
-        medicalCenterId: centerId,
+        medicalCenterId: centerId!,
         deletedAt: null,
       },
       _count: true,

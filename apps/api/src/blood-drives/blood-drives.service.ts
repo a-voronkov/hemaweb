@@ -399,7 +399,7 @@ export class BloodDrivesService {
             name: bloodDrive.medicalCenter.name,
             address: bloodDrive.medicalCenter.address,
             city: bloodDrive.medicalCenter.city,
-            phone: bloodDrive.medicalCenter.phone,
+            phone: bloodDrive.medicalCenter.phone ?? undefined,
           },
         },
       );

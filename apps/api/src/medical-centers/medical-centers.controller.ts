@@ -134,8 +134,8 @@ export class MedicalCentersController {
     @Body() body: {
       name: string;
       organizationId: string;
-      address?: string;
-      city?: string;
+      address: string;
+      city: string;
       phone?: string;
       email?: string;
       locationLat?: number;
