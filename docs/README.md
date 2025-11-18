@@ -29,6 +29,7 @@ Use this as the entry point to understand the problem, requirements, design, imp
 - `QUICK_START.md` - Quick start guide for developers
 - `DEPENDENCIES.md` - Project dependencies and package management
 - `EMAIL_SETUP.md` - Email configuration guide
+- `PGADMIN_SETUP.md` - pgAdmin database management tool setup
 - `ROADMAP.md` - Development roadmap and future features
 
 ### Visual Assets
