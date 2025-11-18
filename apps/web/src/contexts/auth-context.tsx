@@ -34,7 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = async () => {
     try {
       setLoading(true);
-      const response = await authApi.getCurrentUser();
+      // Use validateSession instead of getCurrentUser to get role info
+      const response = await authApi.validateSession();
       // Add convenience fields from profile
       const userData = {
         ...response.user,

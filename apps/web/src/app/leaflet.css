@@ -1,0 +1,8 @@
+/* Leaflet CSS */
+@import 'leaflet/dist/leaflet.css';
+
+/* Fix for marker icons in Next.js */
+.leaflet-default-icon-path {
+  background-image: url('https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png');
+}
+

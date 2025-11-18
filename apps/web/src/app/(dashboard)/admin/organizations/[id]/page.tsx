@@ -212,22 +212,11 @@ export default function OrganizationDetailPage() {
                         <span>{center.city}</span>
                       </div>
                       <div className="flex gap-2">
-                        <Link href={`/admin/medical-centers/${center.id}/edit`} className="flex-1">
-                          <Button variant="outline" size="sm" className="w-full">
-                            <Edit className="h-3 w-3 mr-1" />
-                            Edit
+                        <Link href={`/admin/medical-centers/${center.id}`} className="flex-1">
+                          <Button variant="default" size="sm" className="w-full">
+                            View Details
                           </Button>
                         </Link>
-                        {center.isActive && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleArchiveCenter(center.id)}
-                          >
-                            <Archive className="h-3 w-3 mr-1" />
-                            Archive
-                          </Button>
-                        )}
                       </div>
                     </CardContent>
                   </Card>

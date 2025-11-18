@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { apiClient } from '@/lib/api/client';
 import { useAuth } from '@/hooks/useAuth';
+import { LocationPicker } from '@/components/map/location-picker';
 
 export default function CreateMedicalCenterPage() {
   const router = useRouter();
@@ -36,7 +37,8 @@ export default function CreateMedicalCenterPage() {
       return;
     }
 
-    if (user && user.role?.code !== 'system_admin') {
+    // Allow system_admin and super_admin
+    if (user && !['system_admin', 'super_admin'].includes(user.role?.code || '')) {
       router.push('/');
       return;
     }
@@ -191,6 +193,23 @@ export default function CreateMedicalCenterPage() {
                     placeholder="100.5018"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Location on Map (optional)</Label>
+                <LocationPicker
+                  lat={formData.locationLat ? parseFloat(formData.locationLat) : undefined}
+                  lng={formData.locationLng ? parseFloat(formData.locationLng) : undefined}
+                  address={formData.address}
+                  city={formData.city}
+                  onLocationChange={(lat, lng) => {
+                    setFormData({
+                      ...formData,
+                      locationLat: lat.toString(),
+                      locationLng: lng.toString(),
+                    });
+                  }}
+                />
               </div>
 
               <div className="flex gap-4 pt-4">
