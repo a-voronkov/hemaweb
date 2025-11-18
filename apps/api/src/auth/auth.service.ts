@@ -146,5 +146,91 @@ export class AuthService {
   createBlankSessionCookie() {
     return this.lucia.createBlankSessionCookie();
   }
+
+  /**
+   * Change user password
+   */
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    // Get user
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    // Validate new password
+    if (newPassword.length < 8) {
+      throw new BadRequestException('Password must be at least 8 characters long');
+    }
+
+    // Hash new password
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+    // Update password
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: newPasswordHash },
+    });
+
+    // Invalidate all sessions except current one
+    await this.lucia.invalidateUserSessions(userId);
+
+    return {
+      message: 'Password changed successfully. Please log in again.',
+    };
+  }
+
+  /**
+   * Change user email
+   */
+  async changeEmail(userId: string, newEmail: string, password: string) {
+    // Get user
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Password is incorrect');
+    }
+
+    // Check if new email is already in use
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: newEmail },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Email address is already in use');
+    }
+
+    // Update email
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        email: newEmail,
+        isVerified: false, // Require re-verification
+      },
+    });
+
+    // TODO: Send verification email to new address
+    // await this.verificationService.sendVerificationEmail(newEmail);
+
+    return {
+      message: 'Email changed successfully. Please verify your new email address.',
+    };
+  }
 }
 

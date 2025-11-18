@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Put,
   Body,
   Res,
   Req,
@@ -19,6 +20,7 @@ import { LoginDto } from './dto/login.dto';
 import { RequestResetDto } from './dto/request-reset.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { AuthGuard } from './guards/auth.guard';
+import { CurrentUser } from './decorators/current-user.decorator';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -165,6 +167,44 @@ export class AuthController {
     return this.verificationService.resetPassword(
       resetPasswordDto.token,
       resetPasswordDto.newPassword,
+    );
+  }
+
+  @Put('change-password')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change password (authenticated user)' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid current password' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async changePassword(
+    @CurrentUser() user: any,
+    @Body() body: { currentPassword: string; newPassword: string },
+  ) {
+    return this.authService.changePassword(
+      user.id,
+      body.currentPassword,
+      body.newPassword,
+    );
+  }
+
+  @Put('change-email')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change email address (authenticated user)' })
+  @ApiResponse({ status: 200, description: 'Email change request sent' })
+  @ApiResponse({ status: 400, description: 'Invalid password or email already in use' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async changeEmail(
+    @CurrentUser() user: any,
+    @Body() body: { newEmail: string; password: string },
+  ) {
+    return this.authService.changeEmail(
+      user.id,
+      body.newEmail,
+      body.password,
     );
   }
 }
