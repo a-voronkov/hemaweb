@@ -12,12 +12,18 @@ jobs:
     runs-on: [self-hosted, hemaweb]
 
     steps:
+      - name: Clean certbot directories
+        run: |
+          echo "Cleaning certbot directories..."
+          sudo rm -rf /srv/actions-runner/_work/hemaweb/hemaweb/docker/certbot/conf || true
+          sudo rm -rf /srv/actions-runner/_work/hemaweb/hemaweb/docker/certbot/www || true
+          echo "Certbot directories cleaned"
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
-          clean: false
 
       - name: Pull latest changes
         run: |
