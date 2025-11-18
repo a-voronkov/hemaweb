@@ -22,15 +22,16 @@ jobs:
           git fetch origin
           git reset --hard origin/main
 
-      - name: Load environment variables
+      - name: Copy environment file
         run: |
           set -e
-          echo "📝 Checking .env file..."
-          if [ ! -f .env ]; then
-            echo "⚠️ .env file not found!"
+          echo "📝 Copying .env file from /srv/hemaweb..."
+          if [ ! -f /srv/hemaweb/.env ]; then
+            echo "⚠️ .env file not found in /srv/hemaweb!"
             exit 1
           fi
-          echo "✅ .env file exists"
+          cp /srv/hemaweb/.env .env
+          echo "✅ .env file copied successfully"
 
       - name: Build Docker images
         run: |
