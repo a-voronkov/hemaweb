@@ -65,7 +65,7 @@ services:
 
   # Traefik reverse proxy with automatic SSL
   traefik:
-    image: traefik:v3.2
+    image: traefik:v2.11
     container_name: hemaweb-traefik
     restart: unless-stopped
     command:
