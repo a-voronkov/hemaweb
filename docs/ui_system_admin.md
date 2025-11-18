@@ -1,4 +1,4 @@
-# User Interface – System Administrator
+# User Interface - System Administrator
 
 System administrators manage the platform itself, partnered organizations, super admins, and informational content. Screenshots are in `./images/`.
 

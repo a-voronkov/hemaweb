@@ -1,4 +1,4 @@
-# User Interface – Donor (Mobile Web)
+# User Interface - Donor (Mobile Web)
 
 This document summarizes the donor-facing mobile web UI screens. All screenshots are located in `./images/ui/donor/`.
 

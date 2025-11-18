@@ -96,8 +96,8 @@ We use **latest stable versions** of all dependencies to ensure:
 
 ### 4. LTS Support
 - Prefer packages with Long-Term Support
-- Node.js: Use LTS versions (20.x, 22.x)
-- TypeScript: Latest stable (5.7.x)
+- Node.js: Use LTS version 24.11.1+
+- TypeScript: Latest stable (5.9.3)
 
 ---
 

@@ -4,8 +4,8 @@
 
 ```bash
 # Required software
-- Node.js 20 LTS
-- pnpm 8+
+- Node.js 24.11.1+ LTS
+- pnpm 10.22.0+
 - Docker Desktop
 - Git
 - VS Code (recommended)
@@ -15,7 +15,7 @@
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
-| **Frontend** | Next.js 15 + TypeScript | Donor & Admin UIs |
+| **Frontend** | Next.js 16 + React 19 + TypeScript | Donor & Admin UIs |
 | **UI Library** | shadcn/ui + Tailwind CSS | Component library |
 | **Backend** | NestJS + TypeScript | REST API |
 | **Database** | PostgreSQL 16 + PostGIS | Data storage + geolocation |
@@ -40,8 +40,7 @@ hemaweb/
 │   └── config/           # ESLint, TS configs
 ├── docker/               # Docker configurations
 ├── docker-compose.yml    # Production setup
-├── docker-compose.dev.yml # Development overrides
-└── DEVELOPMENT_PLAN.md   # Detailed development plan
+└── docs/                 # Documentation
 ```
 
 ## Development Phases (14 weeks)
@@ -62,7 +61,7 @@ hemaweb/
 - Setup RBAC middleware
 
 ### Phase 4: Frontend Foundation (Week 5)
-- Setup Next.js 15 with App Router
+- Setup Next.js 16 with App Router
 - Configure shadcn/ui components
 - Create layouts for donor/staff/admin
 
@@ -128,24 +127,40 @@ pnpm format
 
 ```env
 # Database
-DATABASE_URL="postgresql://hemaweb:password@localhost:5432/hemaweb"
+DATABASE_URL="postgresql://hemaweb:hemaweb_dev_password@localhost:5432/hemaweb"
 
 # Redis
 REDIS_URL="redis://localhost:6379"
+REDIS_PASSWORD="hemaweb_redis_password"
 
-# JWT
-JWT_SECRET="your-secret-key-change-in-production"
+# JWT & Auth
+JWT_SECRET="your-super-secret-jwt-key-change-in-production"
 JWT_EXPIRES_IN="15m"
 REFRESH_TOKEN_EXPIRES_IN="7d"
 
 # Frontend
 NEXT_PUBLIC_API_URL="http://localhost:3001"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+# Backend
+PORT=3001
+NODE_ENV="development"
+CORS_ORIGIN="http://localhost:3000"
+
+# File Storage
+UPLOAD_DIR="./uploads"
+MAX_FILE_SIZE="5242880" # 5MB in bytes
+
+# Rate Limiting
+RATE_LIMIT_TTL="60" # seconds
+RATE_LIMIT_MAX="100" # requests per TTL
 
 # Email (optional for Phase 9)
 SMTP_HOST="smtp.gmail.com"
 SMTP_PORT="587"
 SMTP_USER="your-email@gmail.com"
 SMTP_PASS="your-app-password"
+SMTP_FROM="HemaWeb <noreply@hemaweb.local>"
 ```
 
 ## User Roles & Permissions

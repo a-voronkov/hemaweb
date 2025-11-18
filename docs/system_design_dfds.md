@@ -1,4 +1,4 @@
-# System Design – Data Flow Diagrams (DFDs)
+# System Design - Data Flow Diagrams (DFDs)
 
 This document summarizes the key DFDs from the original specification. Diagrams are organized in `./images/dfds/`.
 

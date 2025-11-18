@@ -1,4 +1,4 @@
-# User Interface – Medical Staff, Admin, and Super Admin
+# User Interface - Medical Staff, Admin, and Super Admin
 
 This document summarizes the desktop web UI for medical staff, admins, and super admins. All screenshots are stored in ./images/ui/medical-staff/`.
 

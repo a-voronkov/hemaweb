@@ -2,10 +2,10 @@
 
 ## Stakeholders
 
-- **Hospitals / Medical centers** – organizations that run blood drives, verify donors, and record donations.
-- **Repeat donors** – people who have donated before and are likely to donate again if engaged properly.
-- **Prospective donors** – people who have never donated or are unsure, and need guidance and reassurance.
-- **System administrators / developers** – maintainers of the HemaWeb platform who onboard organizations and manage global settings and content.
+- **Hospitals / Medical centers** - organizations that run blood drives, verify donors, and record donations.
+- **Repeat donors** - people who have donated before and are likely to donate again if engaged properly.
+- **Prospective donors** - people who have never donated or are unsure, and need guidance and reassurance.
+- **System administrators / developers** - maintainers of the HemaWeb platform who onboard organizations and manage global settings and content.
 
 Empathy-mapping in the original document focuses on what each stakeholder group **sees, thinks, feels, says, and does**, and on their pains and gains. These insights drive the requirements and UX decisions captured in the rest of the documentation.
 
