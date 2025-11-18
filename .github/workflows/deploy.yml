@@ -12,85 +12,77 @@ jobs:
     runs-on: [self-hosted, hemaweb]
 
     steps:
-      - name: Clean workspace
-        run: |
-          echo "🧹 Cleaning workspace..."
-          # Remove docker/certbot/conf which may have root-owned files
-          sudo rm -rf docker/certbot/conf docker/certbot/www || true
-          # Clean the rest
-          rm -rf * .* 2>/dev/null || true
-          echo "✅ Workspace cleaned"
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
+          clean: false
 
       - name: Pull latest changes
         run: |
           set -e
-          echo "📥 Pulling latest code..."
+          echo "Pulling latest code..."
           git fetch origin
           git reset --hard origin/main
 
       - name: Copy environment file
         run: |
           set -e
-          echo "📝 Copying .env file from /srv/hemaweb..."
+          echo "Copying .env file from /srv/hemaweb..."
           if [ ! -f /srv/hemaweb/.env ]; then
-            echo "⚠️ .env file not found in /srv/hemaweb!"
+            echo "WARNING: .env file not found in /srv/hemaweb!"
             exit 1
           fi
           cp /srv/hemaweb/.env .env
-          echo "✅ .env file copied successfully"
+          echo ".env file copied successfully"
 
       - name: Build Docker images
         run: |
           set -e
-          echo "🔨 Building Docker images..."
+          echo "Building Docker images..."
           docker compose build web api
 
       - name: Restart services
         run: |
           set -e
-          echo "🔄 Restarting services..."
+          echo "Restarting services..."
           docker compose up -d --remove-orphans
 
       - name: Wait for services
         run: |
-          echo "⏳ Waiting for services to start..."
+          echo "Waiting for services to start..."
           sleep 15
 
       - name: Restart nginx to ensure connectivity
         run: |
-          echo "🔄 Restarting nginx..."
+          echo "Restarting nginx..."
           docker compose restart nginx
           sleep 5
 
       - name: Check service status
         run: |
-          echo "📊 Checking service status..."
+          echo "Checking service status..."
           docker compose ps
 
       - name: Show recent logs
         if: always()
         run: |
-          echo "📋 Recent API logs:"
+          echo "Recent API logs:"
           docker compose logs api --tail 20
           echo ""
-          echo "📋 Recent Web logs:"
+          echo "Recent Web logs:"
           docker compose logs web --tail 20
 
       - name: Verify database
         run: |
-          echo "🗄️ Verifying database connection..."
-          docker compose exec -T postgres psql -U hemaweb -d hemaweb -c 'SELECT COUNT(*) as user_count FROM users;' || echo "⚠️ Database query failed"
+          echo "Verifying database connection..."
+          docker compose exec -T postgres psql -U hemaweb -d hemaweb -c 'SELECT COUNT(*) as user_count FROM users;' || echo "WARNING: Database query failed"
 
       - name: Deployment summary
         if: always()
         run: |
-          echo "📝 Deployment Summary"
+          echo "Deployment Summary"
           echo "===================="
           git log --oneline -3
           echo ""
@@ -98,8 +90,8 @@ jobs:
 
       - name: Notify on success
         if: success()
-        run: echo "✅ Deployment to hemaweb.world successful!"
+        run: echo "Deployment to hemaweb.world successful!"
 
       - name: Notify on failure
         if: failure()
-        run: echo "❌ Deployment to hemaweb.world failed!"
+        run: echo "Deployment to hemaweb.world failed!"
