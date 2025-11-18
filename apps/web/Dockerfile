@@ -55,9 +55,9 @@ COPY --from=deps /app/packages/database/node_modules ./packages/database/node_mo
 COPY apps/web ./apps/web
 COPY packages/database ./packages/database
 
-ENV PRISMA_ENGINES_MIRROR=https://cache.prisma-engines.prisma.sh
-ENV PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1
-ENV PRISMA_CLIENT_ENGINE_TYPE=binary
+ENV PRISMA_ENGINES_MIRROR=file:/app/node_modules/.pnpm/@prisma+engines@5.22.0/node_modules/@prisma/engines \
+    PRISMA_ENGINES_CHECKSUM_IGNORE_MISSING=1 \
+    PRISMA_CLIENT_ENGINE_TYPE=binary
 
 # Generate Prisma Client
 WORKDIR /app/packages/database
