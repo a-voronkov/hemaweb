@@ -1,8 +1,11 @@
 #!/bin/sh
 set -e
 
-echo "🔄 Running database migrations..."
+echo "🔧 Generating Prisma Client..."
 cd /app/packages/database
+npx prisma generate
+
+echo "🔄 Running database migrations..."
 npx prisma migrate deploy
 
 echo "✅ Migrations complete!"
