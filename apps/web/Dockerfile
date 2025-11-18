@@ -61,18 +61,15 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
 
-# Copy Prisma schema before install (needed for postinstall scripts)
-COPY packages/database/prisma ./packages/database/prisma
+# Copy node_modules from builder (includes Prisma Client)
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=builder /app/packages/database/node_modules ./packages/database/node_modules
 
-# Install production dependencies only (--ignore-scripts to skip husky)
-RUN pnpm install --prod --frozen-lockfile --ignore-scripts
-
-# Generate Prisma Client
-WORKDIR /app/packages/database
-RUN npx prisma generate
+# Copy Prisma schema
+COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
 
 # Copy built app from builder
-WORKDIR /app
 COPY --from=builder /app/apps/web/.next ./apps/web/.next
 COPY --from=builder /app/apps/web/public ./apps/web/public
 COPY --from=builder /app/apps/web/next.config.mjs ./apps/web/
