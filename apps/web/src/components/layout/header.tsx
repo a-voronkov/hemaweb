@@ -120,7 +120,10 @@ export function Header() {
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
+                    <Link
+                      href={['staff', 'admin', 'super_admin', 'system_admin'].includes(user.role?.code || '') ? '/profile/staff' : '/profile'}
+                      className="cursor-pointer"
+                    >
                       <User className="h-4 w-4 mr-2" />
                       Profile
                     </Link>

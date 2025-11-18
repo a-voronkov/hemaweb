@@ -299,5 +299,62 @@ export class UsersService {
       lastDonationDate: profile.lastDonationDate,
     };
   }
+
+  /**
+   * Get staff/admin profile
+   */
+  async getStaffProfile(userId: string) {
+    const staff = await this.prisma.medicalCenterStaff.findUnique({
+      where: { userId },
+      include: {
+        medicalCenter: {
+          include: {
+            organization: true,
+          },
+        },
+        organization: true,
+      },
+    });
+
+    if (!staff) {
+      throw new NotFoundException('Staff profile not found');
+    }
+
+    return { data: staff };
+  }
+
+  /**
+   * Update staff/admin profile
+   */
+  async updateStaffProfile(userId: string, updateDto: any) {
+    const staff = await this.prisma.medicalCenterStaff.findUnique({
+      where: { userId },
+    });
+
+    if (!staff) {
+      throw new NotFoundException('Staff profile not found');
+    }
+
+    const updated = await this.prisma.medicalCenterStaff.update({
+      where: { userId },
+      data: {
+        firstName: updateDto.firstName,
+        lastName: updateDto.lastName,
+        phone: updateDto.phone,
+        position: updateDto.position,
+        licenseNumber: updateDto.licenseNumber,
+      },
+      include: {
+        medicalCenter: {
+          include: {
+            organization: true,
+          },
+        },
+        organization: true,
+      },
+    });
+
+    return updated;
+  }
 }
 

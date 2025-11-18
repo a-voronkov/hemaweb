@@ -69,6 +69,13 @@ export default function ProfilePage() {
     }
 
     if (user) {
+      // Redirect staff/admin/super_admin to their profile page
+      const staffRoles = ['staff', 'admin', 'super_admin', 'system_admin'];
+      if (user.role && staffRoles.includes(user.role.code)) {
+        router.push('/profile/staff');
+        return;
+      }
+
       loadProfile();
       loadReferenceData();
     }

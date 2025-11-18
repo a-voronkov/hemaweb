@@ -60,6 +60,34 @@ export class UsersController {
     };
   }
 
+  @Get('me/staff-profile')
+  @ApiOperation({ summary: 'Get current staff/admin profile' })
+  @ApiResponse({ status: 200, description: 'Staff profile retrieved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getMyStaffProfile(@CurrentUser() user: any) {
+    return this.usersService.getStaffProfile(user.id);
+  }
+
+  @Put('me/staff-profile')
+  @ApiOperation({ summary: 'Update current staff/admin profile' })
+  @ApiResponse({ status: 200, description: 'Staff profile updated successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 400, description: 'Invalid input' })
+  async updateMyStaffProfile(
+    @CurrentUser() user: any,
+    @Body() updateDto: any,
+  ) {
+    const updatedProfile = await this.usersService.updateStaffProfile(
+      user.id,
+      updateDto,
+    );
+
+    return {
+      message: 'Staff profile updated successfully',
+      data: updatedProfile,
+    };
+  }
+
   @Get('search')
   @UseGuards(RolesGuard)
   @Roles('admin', 'system_admin', 'staff', 'super_admin')
