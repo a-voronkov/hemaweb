@@ -1,3 +1,22 @@
+# Dependencies stage - cached separately
+FROM node:20-alpine AS deps
+
+# Install OpenSSL for Prisma
+RUN apk add --no-cache openssl libc6-compat
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy only package files for dependency installation
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/
+COPY packages/database/package.json ./packages/database/
+
+# Install dependencies - this layer will be cached if package files don't change
+RUN pnpm install --frozen-lockfile
+
 # Build stage
 FROM node:20-alpine AS builder
 
@@ -12,7 +31,7 @@ ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 
 # Install OpenSSL for Prisma
-RUN apk add --no-cache openssl
+RUN apk add --no-cache openssl libc6-compat
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -27,8 +46,10 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/database/package.json ./packages/database/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Copy node_modules from deps stage (cached!)
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app/packages/database/node_modules ./packages/database/node_modules
 
 # Copy source code
 COPY apps/web ./apps/web
