@@ -245,9 +245,359 @@ export default function OrganizationDetailPage() {
           </div>
         )}
 
-        {/* Organization Information - будет добавлено в следующем шаге */}
-        {/* Staff Management - будет добавлено в следующем шаге */}
-        {/* Medical Centers - будет добавлено в следующем шаге */}
+        {/* Organization Information */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Organization Information
+                </CardTitle>
+                <CardDescription>Basic information about the organization</CardDescription>
+              </div>
+              {!editingOrg ? (
+                <Button variant="outline" onClick={() => setEditingOrg(true)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button onClick={handleSaveOrganization} disabled={savingOrg}>
+                    <Save className="h-4 w-4 mr-2" />
+                    {savingOrg ? 'Saving...' : 'Save'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setEditingOrg(false);
+                      setOrgFormData({
+                        name: organization.name,
+                        description: organization.description || '',
+                        email: organization.email || '',
+                        phone: organization.phone || '',
+                        website: organization.website || '',
+                      });
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {editingOrg ? (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="name">Organization Name *</Label>
+                  <Input
+                    id="name"
+                    value={orgFormData.name}
+                    onChange={(e) => setOrgFormData({ ...orgFormData, name: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={orgFormData.description}
+                    onChange={(e) => setOrgFormData({ ...orgFormData, description: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={orgFormData.email}
+                      onChange={(e) => setOrgFormData({ ...orgFormData, email: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={orgFormData.phone}
+                      onChange={(e) => setOrgFormData({ ...orgFormData, phone: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="website">Website</Label>
+                  <Input
+                    id="website"
+                    type="url"
+                    value={orgFormData.website}
+                    onChange={(e) => setOrgFormData({ ...orgFormData, website: e.target.value })}
+                    placeholder="https://example.com"
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <h3 className="text-2xl font-bold">{organization.name}</h3>
+                  {organization.description && (
+                    <p className="text-muted-foreground mt-1">{organization.description}</p>
+                  )}
+                </div>
+
+                {organization._count && (
+                  <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Medical Centers</p>
+                      <p className="text-2xl font-bold">{organization._count.medicalCenters}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Staff Members</p>
+                      <p className="text-2xl font-bold">{organization._count.staff}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <h3 className="font-semibold">Contact Information</h3>
+
+                  {organization.email && (
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <span>{organization.email}</span>
+                    </div>
+                  )}
+
+                  {organization.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span>{organization.phone}</span>
+                    </div>
+                  )}
+
+                  {organization.website && (
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <a
+                        href={organization.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {organization.website.replace(/^https?:\/\//, '')}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Staff Management */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Staff Members ({organization.staff.length})
+                </CardTitle>
+                <CardDescription>Manage organization staff and their access</CardDescription>
+              </div>
+              <Dialog open={addStaffOpen} onOpenChange={setAddStaffOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add Staff
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add New Staff Member</DialogTitle>
+                    <DialogDescription>
+                      Create a new staff account for this organization
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="firstName">First Name *</Label>
+                        <Input
+                          id="firstName"
+                          value={newStaffData.firstName}
+                          onChange={(e) => setNewStaffData({ ...newStaffData, firstName: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="lastName">Last Name *</Label>
+                        <Input
+                          id="lastName"
+                          value={newStaffData.lastName}
+                          onChange={(e) => setNewStaffData({ ...newStaffData, lastName: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="staffEmail">Email *</Label>
+                      <Input
+                        id="staffEmail"
+                        type="email"
+                        value={newStaffData.email}
+                        onChange={(e) => setNewStaffData({ ...newStaffData, email: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password *</Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        value={newStaffData.password}
+                        onChange={(e) => setNewStaffData({ ...newStaffData, password: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="position">Position</Label>
+                      <Input
+                        id="position"
+                        value={newStaffData.position}
+                        onChange={(e) => setNewStaffData({ ...newStaffData, position: e.target.value })}
+                        placeholder="e.g., Nurse, Lab Technician"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="roleCode">Role *</Label>
+                      <select
+                        id="roleCode"
+                        value={newStaffData.roleCode}
+                        onChange={(e) => setNewStaffData({ ...newStaffData, roleCode: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-md"
+                      >
+                        <option value="admin">Admin (Medical Center)</option>
+                        <option value="super_admin">Super Admin (Organization)</option>
+                      </select>
+                    </div>
+
+                    <div className="flex gap-2 pt-4">
+                      <Button onClick={handleAddStaff} disabled={addingStaff} className="flex-1">
+                        {addingStaff ? 'Adding...' : 'Add Staff Member'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setAddStaffOpen(false)}
+                        disabled={addingStaff}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {organization.staff.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No staff members yet</p>
+                <p className="text-sm mt-1">Add your first staff member to get started</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {organization.staff.map((staff) => (
+                  <div
+                    key={staff.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">
+                          {staff.firstName} {staff.lastName}
+                        </p>
+                        <Badge variant={staff.user.isActive ? 'default' : 'secondary'}>
+                          {staff.user.isActive ? 'Active' : 'Archived'}
+                        </Badge>
+                        <Badge variant="outline">{staff.user.role.name}</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{staff.user.email}</p>
+                      {staff.position && (
+                        <p className="text-sm text-muted-foreground">{staff.position}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {staff.user.isActive ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleArchiveStaff(staff.id)}
+                        >
+                          <Archive className="h-4 w-4 mr-1" />
+                          Archive
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleActivateStaff(staff.id)}
+                        >
+                          Activate
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Medical Centers */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Medical Centers ({organization.medicalCenters.length})</CardTitle>
+            <CardDescription>Medical centers belonging to this organization</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {organization.medicalCenters.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Building2 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No medical centers yet</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {organization.medicalCenters.map((center) => (
+                  <div
+                    key={center.id}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium">{center.name}</p>
+                      <p className="text-sm text-muted-foreground">{center.city}</p>
+                    </div>
+                    <Badge variant={center.isActive ? 'default' : 'secondary'}>
+                      {center.isActive ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );

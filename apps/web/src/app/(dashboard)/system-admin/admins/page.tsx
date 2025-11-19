@@ -146,11 +146,142 @@ export default function SystemAdminsPage() {
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
-                {/* Form fields будут добавлены в следующем шаге */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name *</Label>
+                    <Input
+                      id="firstName"
+                      value={newAdminData.firstName}
+                      onChange={(e) => setNewAdminData({ ...newAdminData, firstName: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name *</Label>
+                    <Input
+                      id="lastName"
+                      value={newAdminData.lastName}
+                      onChange={(e) => setNewAdminData({ ...newAdminData, lastName: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="adminEmail">Email *</Label>
+                  <Input
+                    id="adminEmail"
+                    type="email"
+                    value={newAdminData.email}
+                    onChange={(e) => setNewAdminData({ ...newAdminData, email: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="adminPassword">Password *</Label>
+                  <Input
+                    id="adminPassword"
+                    type="password"
+                    value={newAdminData.password}
+                    onChange={(e) => setNewAdminData({ ...newAdminData, password: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={handleAddAdmin} disabled={addingAdmin} className="flex-1">
+                    {addingAdmin ? 'Creating...' : 'Create System Admin'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setAddAdminOpen(false)}
+                    disabled={addingAdmin}
+                  >
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </DialogContent>
           </Dialog>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-800">{error}</p>
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p className="text-green-800">{success}</p>
+          </div>
+        )}
+
+        {/* System Admins List */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UserCog className="h-5 w-5" />
+              System Administrators ({admins.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {admins.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <UserCog className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No system administrators yet</p>
+                <p className="text-sm mt-1">Add your first system admin to get started</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {admins.map((admin) => (
+                  <div
+                    key={admin.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">
+                          {admin.systemAdmin ? `${admin.systemAdmin.firstName} ${admin.systemAdmin.lastName}` : 'Unknown'}
+                        </p>
+                        <Badge variant={admin.isActive ? 'default' : 'secondary'}>
+                          {admin.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                        {admin.isVerified && (
+                          <Badge variant="outline">Verified</Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">{admin.email}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Created: {new Date(admin.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleToggleActive(admin.id, admin.isActive)}
+                      >
+                        {admin.isActive ? (
+                          <>
+                            <Archive className="h-4 w-4 mr-1" />
+                            Deactivate
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Activate
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </MainLayout>
   );
