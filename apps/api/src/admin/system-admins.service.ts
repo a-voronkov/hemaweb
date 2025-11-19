@@ -131,12 +131,14 @@ export class SystemAdminsService {
       throw new NotFoundException('System admin not found');
     }
 
+    const systemAdminId = user.systemAdmin.id;
+
     // Update in transaction
     await this.prisma.$transaction(async (tx) => {
       // Update system admin profile
-      if ((data.firstName !== undefined || data.lastName !== undefined) && user.systemAdmin) {
+      if (data.firstName !== undefined || data.lastName !== undefined) {
         await tx.systemAdmin.update({
-          where: { id: user.systemAdmin.id },
+          where: { id: systemAdminId },
           data: {
             firstName: data.firstName,
             lastName: data.lastName,
