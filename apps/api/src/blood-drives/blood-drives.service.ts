@@ -488,6 +488,8 @@ export class BloodDrivesService {
             id: true,
             name: true,
             city: true,
+            locationLat: true,
+            locationLng: true,
           },
         },
         status: true,
