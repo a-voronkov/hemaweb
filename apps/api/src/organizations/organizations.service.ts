@@ -37,7 +37,12 @@ export class OrganizationsService {
           select: {
             id: true,
             name: true,
+            address: true,
             city: true,
+            phone: true,
+            email: true,
+            locationLat: true,
+            locationLng: true,
             isActive: true,
           },
         },
@@ -49,7 +54,9 @@ export class OrganizationsService {
             position: true,
             user: {
               select: {
+                id: true,
                 email: true,
+                isActive: true,
                 role: {
                   select: {
                     name: true,

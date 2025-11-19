@@ -134,6 +134,100 @@ export class AdminService {
   }
 
   /**
+   * Get global statistics for System Admin
+   */
+  async getGlobalStats() {
+    const [
+      totalOrganizations,
+      activeOrganizations,
+      totalMedicalCenters,
+      activeMedicalCenters,
+      totalStaff,
+      activeStaff,
+      totalDonors,
+      verifiedDonors,
+      totalDonations,
+      totalBloodDrives,
+    ] = await Promise.all([
+      // Organizations
+      this.prisma.medicalOrganization.count({
+        where: { deletedAt: null },
+      }),
+      this.prisma.medicalOrganization.count({
+        where: { deletedAt: null, isActive: true },
+      }),
+
+      // Medical Centers
+      this.prisma.medicalCenter.count({
+        where: { deletedAt: null },
+      }),
+      this.prisma.medicalCenter.count({
+        where: { deletedAt: null, isActive: true },
+      }),
+
+      // Staff
+      this.prisma.medicalCenterStaff.count(),
+      this.prisma.medicalCenterStaff.count({
+        where: {
+          user: { isActive: true },
+        },
+      }),
+
+      // Donors
+      this.prisma.profile.count(),
+      this.prisma.profile.count({
+        where: { isDonorVerified: true },
+      }),
+
+      // Donations
+      this.prisma.donationRecord.count({
+        where: { deletedAt: null },
+      }),
+
+      // Blood Drives
+      this.prisma.bloodDrive.count({
+        where: { deletedAt: null },
+      }),
+    ]);
+
+    // Get organizations with stats
+    const organizations = await this.prisma.medicalOrganization.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        isActive: true,
+        _count: {
+          select: {
+            medicalCenters: {
+              where: { deletedAt: null },
+            },
+            staff: true,
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+      take: 10,
+    });
+
+    return {
+      overview: {
+        totalOrganizations,
+        activeOrganizations,
+        totalMedicalCenters,
+        activeMedicalCenters,
+        totalStaff,
+        activeStaff,
+        totalDonors,
+        verifiedDonors,
+        totalDonations,
+        totalBloodDrives,
+      },
+      topOrganizations: organizations,
+    };
+  }
+
+  /**
    * Get recent activity
    */
   async getRecentActivity(limit: number = 20) {

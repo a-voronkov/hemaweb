@@ -122,17 +122,12 @@ export const navigationConfig: Record<string, RoleNavigation> = {
       {
         label: 'My Organization',
         href: '/super-admin/organization',
-        description: 'Manage my organization',
+        description: 'Manage my organization and staff',
       },
       {
         label: 'Medical Centers',
         href: '/super-admin/centers',
         description: 'Manage organization centers',
-      },
-      {
-        label: 'Staff',
-        href: '/staff/dashboard',
-        description: 'Staff functions',
       },
     ],
   },
@@ -142,13 +137,18 @@ export const navigationConfig: Record<string, RoleNavigation> = {
     primary: [
       {
         label: 'Dashboard',
-        href: '/admin',
-        description: 'System dashboard',
+        href: '/system-admin/dashboard',
+        description: 'Global platform statistics',
       },
       {
         label: 'Organizations',
-        href: '/admin/organizations',
+        href: '/system-admin/organizations',
         description: 'Manage all organizations',
+      },
+      {
+        label: 'System Admins',
+        href: '/system-admin/admins',
+        description: 'Manage system administrators',
       },
     ],
   },
