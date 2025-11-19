@@ -395,16 +395,16 @@ model BloodDriveBloodType {
 
 // Blood Drive Registrations
 model BloodDriveRegistration {
-  id                 String   @id @default(cuid())
+  id                 String    @id @default(cuid())
   bloodDriveId       String
   profileId          String
-  confirmationNumber String   @unique
-  appointmentDate    DateTime
-  appointmentTime    String
-  status             String   @default("registered") // registered, attended, cancelled
+  confirmationNumber String?   @unique
+  appointmentDate    DateTime?
+  appointmentTime    String?
+  status             String    @default("registered") // registered, attended, cancelled
   notes              String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   // Relations
   bloodDrive BloodDrive @relation(fields: [bloodDriveId], references: [id], onDelete: Cascade)
