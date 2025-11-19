@@ -70,27 +70,22 @@ export default function CreateBloodDrivePage() {
       const userIsAdmin = user?.role?.code === 'admin' || user?.role?.code === 'super_admin';
       setIsAdmin(userIsAdmin);
 
-      const requests = [
+      // Load blood types and drive types
+      const [bloodTypesRes, driveTypesRes] = await Promise.all([
         apiClient.get<{ data: BloodTypeRef[] }>('/reference/blood-types'),
         apiClient.get<{ data: BloodDriveTypeRef[] }>('/reference/blood-drive-types'),
-      ];
-
-      // If admin, load all medical centers; if staff, load only their center
-      if (userIsAdmin) {
-        requests.push(apiClient.get<{ data: MedicalCenter[] }>('/medical-centers'));
-      } else {
-        requests.push(apiClient.get<{ data: MedicalCenter }>('/medical-centers/staff/my-center'));
-      }
-
-      const [bloodTypesRes, driveTypesRes, centersRes] = await Promise.all(requests);
+      ]);
 
       setBloodTypes(bloodTypesRes.data || []);
       setDriveTypes(driveTypesRes.data || []);
 
+      // Load medical centers based on role
       if (userIsAdmin) {
-        setMedicalCenters(centersRes.data as MedicalCenter[]);
+        const centersRes = await apiClient.get<{ data: MedicalCenter[] }>('/medical-centers');
+        setMedicalCenters(centersRes.data);
       } else {
-        const myCenter = centersRes.data as MedicalCenter;
+        const centerRes = await apiClient.get<{ data: MedicalCenter }>('/medical-centers/staff/my-center');
+        const myCenter = centerRes.data;
         setMedicalCenters([myCenter]);
         setFormData(prev => ({
           ...prev,
