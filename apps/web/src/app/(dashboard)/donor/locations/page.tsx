@@ -193,22 +193,14 @@ export default function FavoriteLocationsPage() {
                 <div className="space-y-2">
                   <Label>Select Location on Map *</Label>
                   <LocationPicker
-                    position={
-                      newLocationData.latitude !== null && newLocationData.longitude !== null
-                        ? [newLocationData.latitude, newLocationData.longitude]
-                        : null
-                    }
+                    lat={newLocationData.latitude ?? undefined}
+                    lng={newLocationData.longitude ?? undefined}
                     onLocationChange={(lat, lng) => {
                       setNewLocationData({ ...newLocationData, latitude: lat, longitude: lng });
                       setError('');
                     }}
                     height="300px"
                   />
-                  {newLocationData.latitude !== null && newLocationData.longitude !== null && (
-                    <p className="text-xs text-muted-foreground">
-                      Selected: {newLocationData.latitude.toFixed(6)}, {newLocationData.longitude.toFixed(6)}
-                    </p>
-                  )}
                 </div>
 
                 <div className="space-y-3">
