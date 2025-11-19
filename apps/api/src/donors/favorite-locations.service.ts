@@ -178,7 +178,7 @@ export class FavoriteLocationsService {
 
         // Find closest favorite location
         let minDistance = Infinity;
-        let closestLocation = null;
+        let closestLocation: typeof profile.favoriteLocations[0] | null = null;
 
         for (const loc of profile.favoriteLocations) {
           const distance = this.calculateDistance(
@@ -206,8 +206,8 @@ export class FavoriteLocationsService {
 
         return null;
       })
-      .filter((drive) => drive !== null)
-      .sort((a, b) => a!.distance - b!.distance);
+      .filter((drive): drive is NonNullable<typeof drive> => drive !== null)
+      .sort((a, b) => a.distance - b.distance);
 
     return { data: drivesWithDistance };
   }
