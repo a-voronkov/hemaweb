@@ -24,6 +24,13 @@ export class BloodDrivesController {
     return this.bloodDrivesService.getAllBloodDrives(status, type);
   }
 
+  @Get('upcoming')
+  @ApiOperation({ summary: 'Get upcoming blood drives' })
+  @ApiResponse({ status: 200, description: 'Upcoming blood drives retrieved' })
+  async getUpcomingBloodDrives(): Promise<{ data: any[] }> {
+    return this.bloodDrivesService.getUpcomingBloodDrives();
+  }
+
   @Get('nearby')
   @ApiOperation({ summary: 'Get nearby blood drives' })
   @ApiQuery({ name: 'lat', required: true, description: 'Latitude' })
@@ -138,6 +145,20 @@ export class BloodDrivesController {
   @ApiResponse({ status: 200, description: 'Registrations retrieved' })
   async getBloodDriveRegistrations(@Param('id') id: string) {
     return this.bloodDrivesService.getBloodDriveRegistrations(id);
+  }
+
+  @Post('appointments')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('donor')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Book appointment for blood drive (Donor only)' })
+  @ApiResponse({ status: 201, description: 'Appointment booked' })
+  @ApiResponse({ status: 400, description: 'Not eligible or drive is full' })
+  async bookAppointment(
+    @Request() req,
+    @Body() body: { bloodDriveId: string; appointmentDate: string },
+  ) {
+    return this.bloodDrivesService.bookAppointment(req.user.id, body.bloodDriveId, body.appointmentDate);
   }
 }
 
