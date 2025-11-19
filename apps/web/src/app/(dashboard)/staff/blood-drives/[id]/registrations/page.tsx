@@ -13,9 +13,9 @@ import { format, parseISO } from 'date-fns';
 
 interface Registration {
   id: string;
-  confirmationNumber: string;
-  appointmentDate: string;
-  appointmentTime: string;
+  confirmationNumber?: string | null;
+  appointmentDate?: string | null;
+  appointmentTime?: string | null;
   status: string;
   createdAt: string;
   profile: {
@@ -139,20 +139,26 @@ export default function RegistrationsPage() {
                             </div>
                           )}
 
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span>{format(parseISO(registration.appointmentDate), 'MMM d, yyyy')}</span>
-                          </div>
+                          {registration.appointmentDate && (
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span>{format(parseISO(registration.appointmentDate), 'MMM d, yyyy')}</span>
+                            </div>
+                          )}
 
-                          <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>{registration.appointmentTime}</span>
-                          </div>
+                          {registration.appointmentTime && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <span>{registration.appointmentTime}</span>
+                            </div>
+                          )}
                         </div>
 
-                        <div className="mt-2 text-xs text-muted-foreground">
-                          Confirmation: {registration.confirmationNumber}
-                        </div>
+                        {registration.confirmationNumber && (
+                          <div className="mt-2 text-xs text-muted-foreground">
+                            Confirmation: {registration.confirmationNumber}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
