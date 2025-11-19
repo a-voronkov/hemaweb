@@ -186,5 +186,15 @@ export class BloodDrivesController {
   async cancelAppointment(@Request() req, @Param('id') id: string) {
     return this.bloodDrivesService.cancelAppointment(req.user.id, id);
   }
+
+  @Put(':id/archive')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('staff', 'admin', 'super_admin')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Archive blood drive (staff/admin only)' })
+  @ApiResponse({ status: 200, description: 'Blood drive archived' })
+  async archiveBloodDrive(@Param('id') id: string) {
+    return this.bloodDrivesService.archiveBloodDrive(id);
+  }
 }
 

@@ -42,6 +42,11 @@ export class BloodDrivesService {
             bloodType: true,
           },
         },
+        _count: {
+          select: {
+            registrations: true,
+          },
+        },
       },
       orderBy: { startDateTime: 'asc' },
     });
@@ -142,13 +147,20 @@ export class BloodDrivesService {
    * Create blood drive
    */
   async createBloodDrive(userId: string, dto: CreateBloodDriveDto): Promise<{ message: string; data: any }> {
-    // Get staff info
-    const staff = await this.prisma.medicalCenterStaff.findUnique({
-      where: { userId },
-    });
+    // Determine medical center ID
+    let medicalCenterId = dto.medicalCenterId;
 
-    if (!staff?.medicalCenterId) {
-      throw new ForbiddenException('Only medical center staff can create blood drives');
+    // If not provided, get from staff record
+    if (!medicalCenterId) {
+      const staff = await this.prisma.medicalCenterStaff.findUnique({
+        where: { userId },
+      });
+
+      if (!staff?.medicalCenterId) {
+        throw new ForbiddenException('Only medical center staff can create blood drives');
+      }
+
+      medicalCenterId = staff.medicalCenterId;
     }
 
     // Get type and status
@@ -171,12 +183,14 @@ export class BloodDrivesService {
     // Create blood drive
     const bloodDrive = await this.prisma.bloodDrive.create({
       data: {
-        medicalCenterId: staff.medicalCenterId,
+        medicalCenterId,
         createdById: userId,
         typeId: type.id,
         statusId: status.id,
         title: dto.title,
         description: dto.description,
+        address: dto.address,
+        city: dto.city,
         startDateTime: new Date(dto.startDateTime),
         endDateTime: new Date(dto.endDateTime),
         targetDonors: dto.targetDonors,
@@ -723,6 +737,40 @@ export class BloodDrivesService {
 
     return {
       message: 'Appointment cancelled successfully',
+    };
+  }
+
+  /**
+   * Archive blood drive (mark as completed)
+   */
+  async archiveBloodDrive(bloodDriveId: string) {
+    const bloodDrive = await this.prisma.bloodDrive.findUnique({
+      where: { id: bloodDriveId },
+    });
+
+    if (!bloodDrive) {
+      throw new NotFoundException('Blood drive not found');
+    }
+
+    // Get completed status
+    const completedStatus = await this.prisma.bloodDriveStatusRef.findUnique({
+      where: { code: 'completed' },
+    });
+
+    if (!completedStatus) {
+      throw new BadRequestException('Completed status not found');
+    }
+
+    // Update status to completed
+    await this.prisma.bloodDrive.update({
+      where: { id: bloodDriveId },
+      data: {
+        statusId: completedStatus.id,
+      },
+    });
+
+    return {
+      message: 'Blood drive archived successfully',
     };
   }
 }

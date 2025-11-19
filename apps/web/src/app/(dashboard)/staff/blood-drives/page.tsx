@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/main-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { apiClient } from '@/lib/api/client';
+import { Archive } from 'lucide-react';
 import Link from 'next/link';
 
 interface MedicalCenter {
@@ -24,12 +26,18 @@ interface BloodDrive {
   status?: { code: string; name: string } | null;
   type?: { name: string } | null;
   bloodTypesNeeded?: { id: string; bloodType: { name: string } }[];
+  _count?: {
+    registrations: number;
+  };
 }
 
 export default function BloodDrivesListPage() {
   const [loading, setLoading] = useState(true);
   const [bloodDrives, setBloodDrives] = useState<BloodDrive[]>([]);
   const [center, setCenter] = useState<MedicalCenter | null>(null);
+  const [archiveDialogOpen, setArchiveDialogOpen] = useState(false);
+  const [selectedDrive, setSelectedDrive] = useState<BloodDrive | null>(null);
+  const [archiving, setArchiving] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -73,6 +81,26 @@ export default function BloodDrivesListPage() {
       case 'completed': return 'bg-gray-100 text-gray-800';
       case 'cancelled': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const handleArchiveClick = (drive: BloodDrive) => {
+    setSelectedDrive(drive);
+    setArchiveDialogOpen(true);
+  };
+
+  const handleArchiveConfirm = async () => {
+    if (!selectedDrive) return;
+
+    setArchiving(true);
+    try {
+      await apiClient.put(`/blood-drives/${selectedDrive.id}/archive`);
+      setArchiveDialogOpen(false);
+      loadData(); // Reload data
+    } catch (err) {
+      console.error('Failed to archive blood drive:', err);
+    } finally {
+      setArchiving(false);
     }
   };
 
@@ -170,17 +198,32 @@ export default function BloodDrivesListPage() {
                       </div>
                     )}
 
-                    <div className="mt-4 flex gap-2">
+                    <div className="mt-4 flex gap-2 flex-wrap">
                       <Link href={`/staff/blood-drives/${drive.id}`}>
                         <Button variant="outline" size="sm">
                           View Details
                         </Button>
                       </Link>
                       <Link href={`/staff/blood-drives/${drive.id}/registrations`}>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="relative">
                           View Registrations
+                          {drive._count && drive._count.registrations > 0 && (
+                            <span className="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                              {drive._count.registrations}
+                            </span>
+                          )}
                         </Button>
                       </Link>
+                      {drive.status?.code !== 'completed' && drive.status?.code !== 'cancelled' && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleArchiveClick(drive)}
+                        >
+                          <Archive className="h-4 w-4 mr-2" />
+                          Archive
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -198,6 +241,28 @@ export default function BloodDrivesListPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Archive Confirmation Dialog */}
+      <AlertDialog open={archiveDialogOpen} onOpenChange={setArchiveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Blood Drive?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to archive "{selectedDrive?.title}"? This will mark it as completed
+              and it will no longer appear in the active blood drives list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={archiving}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleArchiveConfirm}
+              disabled={archiving}
+            >
+              {archiving ? 'Archiving...' : 'Archive'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </MainLayout>
   );
 }
