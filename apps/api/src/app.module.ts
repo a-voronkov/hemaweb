@@ -11,6 +11,7 @@ import { BloodDrivesModule } from './blood-drives/blood-drives.module';
 import { AdminModule } from './admin/admin.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { StaffModule } from './staff/staff.module';
+import { DonorsModule } from './donors/donors.module';
 import configuration from './config/configuration';
 
 @Module({
@@ -28,6 +29,7 @@ import configuration from './config/configuration';
     AdminModule,
     OrganizationsModule,
     StaffModule,
+    DonorsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

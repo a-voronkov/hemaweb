@@ -21,23 +21,28 @@ export const navigationConfig: Record<string, RoleNavigation> = {
     primary: [
       {
         label: 'Dashboard',
-        href: '/profile',
-        description: 'Your profile and overview',
+        href: '/donor/dashboard',
+        description: 'Your donor overview',
       },
       {
         label: 'Blood Drives',
-        href: '/blood-drives',
-        description: 'Find blood drives near you',
+        href: '/donor/blood-drives',
+        description: 'Find and book blood drives',
       },
       {
         label: 'My Donations',
-        href: '/donations',
+        href: '/donor/donations',
         description: 'View your donation history',
       },
       {
-        label: 'Calendar',
-        href: '/calendar',
-        description: 'Your donation calendar',
+        label: 'Achievements',
+        href: '/donor/achievements',
+        description: 'Track your impact and achievements',
+      },
+      {
+        label: 'Profile',
+        href: '/profile',
+        description: 'Manage your profile',
       },
     ],
     secondary: [
