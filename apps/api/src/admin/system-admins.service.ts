@@ -29,7 +29,7 @@ export class SystemAdminsService {
         isActive: true,
         isVerified: true,
         createdAt: true,
-        staff: {
+        systemAdmin: {
           select: {
             id: true,
             firstName: true,
@@ -86,8 +86,8 @@ export class SystemAdminsService {
         },
       });
 
-      // Create staff profile (system admins don't belong to organization)
-      const staff = await tx.medicalCenterStaff.create({
+      // Create system admin profile
+      const systemAdmin = await tx.systemAdmin.create({
         data: {
           userId: user.id,
           firstName: data.firstName,
@@ -95,7 +95,7 @@ export class SystemAdminsService {
         },
       });
 
-      return { user, staff };
+      return { user, systemAdmin };
     });
 
     return {
@@ -103,8 +103,8 @@ export class SystemAdminsService {
       data: {
         id: result.user.id,
         email: result.user.email,
-        firstName: result.staff.firstName,
-        lastName: result.staff.lastName,
+        firstName: result.systemAdmin.firstName,
+        lastName: result.systemAdmin.lastName,
       },
     };
   }
@@ -123,20 +123,20 @@ export class SystemAdminsService {
     const user = await this.prisma.user.findUnique({
       where: { id, deletedAt: null },
       include: {
-        staff: true,
+        systemAdmin: true,
       },
     });
 
-    if (!user || !user.staff) {
+    if (!user || !user.systemAdmin) {
       throw new NotFoundException('System admin not found');
     }
 
     // Update in transaction
     await this.prisma.$transaction(async (tx) => {
-      // Update staff profile
+      // Update system admin profile
       if (data.firstName !== undefined || data.lastName !== undefined) {
-        await tx.medicalCenterStaff.update({
-          where: { id: user.staff.id },
+        await tx.systemAdmin.update({
+          where: { id: user.systemAdmin.id },
           data: {
             firstName: data.firstName,
             lastName: data.lastName,
