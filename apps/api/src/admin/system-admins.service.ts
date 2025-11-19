@@ -134,7 +134,7 @@ export class SystemAdminsService {
     // Update in transaction
     await this.prisma.$transaction(async (tx) => {
       // Update system admin profile
-      if (data.firstName !== undefined || data.lastName !== undefined) {
+      if ((data.firstName !== undefined || data.lastName !== undefined) && user.systemAdmin) {
         await tx.systemAdmin.update({
           where: { id: user.systemAdmin.id },
           data: {
