@@ -139,12 +139,15 @@ export default function RegistrationsPage() {
                             </div>
                           )}
 
-                          {registration.appointmentDate && (
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span>{format(parseISO(registration.appointmentDate), 'MMM d, yyyy')}</span>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              {registration.appointmentDate
+                                ? format(parseISO(registration.appointmentDate), 'MMM d, yyyy')
+                                : `Registered: ${format(parseISO(registration.createdAt), 'MMM d, yyyy')}`
+                              }
+                            </span>
+                          </div>
 
                           {registration.appointmentTime && (
                             <div className="flex items-center gap-2">
@@ -154,11 +157,13 @@ export default function RegistrationsPage() {
                           )}
                         </div>
 
-                        {registration.confirmationNumber && (
-                          <div className="mt-2 text-xs text-muted-foreground">
-                            Confirmation: {registration.confirmationNumber}
-                          </div>
-                        )}
+                        <div className="mt-2 text-xs text-muted-foreground">
+                          {registration.confirmationNumber ? (
+                            <>Confirmation: {registration.confirmationNumber}</>
+                          ) : (
+                            <>Registered: {format(parseISO(registration.createdAt), 'MMM d, yyyy h:mm a')}</>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
