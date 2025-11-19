@@ -176,6 +176,18 @@ model Profile {
   isDonorVerified       Boolean   @default(false) // Medical verification
   lastDonationDate      DateTime?
   nextEligibleDate      DateTime?
+  weight                Float? // Weight in kg
+  // Eligibility questionnaire responses
+  hasChronicIllness     Boolean?
+  hasRecentTattoo       Boolean?
+  hasRecentPiercing     Boolean?
+  hasRecentSurgery      Boolean?
+  hasRecentTransfusion  Boolean?
+  isPregnant            Boolean?
+  isBreastfeeding       Boolean?
+  hasInfectiousDisease  Boolean?
+  takingMedication      Boolean?
+  eligibilityNotes      String? // Additional notes from questionnaire
   // PostGIS geography type for location
   locationLat           Float?
   locationLng           Float?
