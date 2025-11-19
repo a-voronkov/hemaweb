@@ -41,7 +41,7 @@ export default function CreateOrganizationPage() {
     setCreating(true);
 
     try {
-      const res = await apiClient.post('/organizations', formData);
+      const res = await apiClient.post<{ data: { id: string } }>('/organizations', formData);
       router.push(`/system-admin/organizations/${res.data.id}`);
     } catch (err: any) {
       setError(err.message || 'Failed to create organization');
