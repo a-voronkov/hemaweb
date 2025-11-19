@@ -493,7 +493,7 @@ export class BloodDrivesService {
         status: true,
         _count: {
           select: {
-            appointments: true,
+            registrations: true,
           },
         },
       },
@@ -504,16 +504,18 @@ export class BloodDrivesService {
     return {
       data: bloodDrives.map(drive => ({
         id: drive.id,
-        name: drive.name,
+        name: drive.title,
         description: drive.description,
-        location: drive.location,
+        location: drive.address || drive.city || '',
         startDate: drive.startDateTime,
         endDate: drive.endDateTime,
         startTime: drive.startDateTime.toTimeString().slice(0, 5),
-        endTime: drive.endDateTime.toTimeString().slice(0, 5),
-        maxDonors: drive.maxDonors,
+        endTime: drive.endDateTime ? drive.endDateTime.toTimeString().slice(0, 5) : undefined,
+        maxDonors: drive.targetDonors,
         medicalCenter: drive.medicalCenter,
-        _count: drive._count,
+        _count: {
+          appointments: drive._count.registrations,
+        },
       })),
     };
   }
@@ -537,7 +539,7 @@ export class BloodDrivesService {
       include: {
         _count: {
           select: {
-            appointments: true,
+            registrations: true,
           },
         },
       },
@@ -548,44 +550,34 @@ export class BloodDrivesService {
     }
 
     // Check if drive is full
-    if (bloodDrive.maxDonors && bloodDrive._count.appointments >= bloodDrive.maxDonors) {
+    if (bloodDrive.targetDonors && bloodDrive._count.registrations >= bloodDrive.targetDonors) {
       throw new BadRequestException('Blood drive is full');
     }
 
     // Check if already registered
-    const existingAppointment = await this.prisma.bloodDriveAppointment.findFirst({
+    const existingRegistration = await this.prisma.bloodDriveRegistration.findFirst({
       where: {
         bloodDriveId,
         profileId: profile.id,
       },
     });
 
-    if (existingAppointment) {
+    if (existingRegistration) {
       throw new BadRequestException('Already registered for this blood drive');
     }
 
-    // Get confirmed status
-    const confirmedStatus = await this.prisma.appointmentStatusRef.findUnique({
-      where: { code: 'confirmed' },
-    });
-
-    if (!confirmedStatus) {
-      throw new NotFoundException('Appointment status not found');
-    }
-
-    // Create appointment
-    const appointment = await this.prisma.bloodDriveAppointment.create({
+    // Create registration
+    const registration = await this.prisma.bloodDriveRegistration.create({
       data: {
         bloodDriveId,
         profileId: profile.id,
-        appointmentDate: new Date(appointmentDate),
-        statusId: confirmedStatus.id,
+        status: 'registered',
       },
     });
 
     return {
       message: 'Appointment booked successfully',
-      data: appointment,
+      data: registration,
     };
   }
 }

@@ -51,14 +51,16 @@ export class DonorsService {
       nextEligibleDate.setDate(nextEligibleDate.getDate() + 56);
     }
 
-    // Get upcoming appointments
-    const upcomingAppointments = await this.prisma.bloodDriveAppointment.findMany({
+    // Get upcoming registrations
+    const upcomingRegistrations = await this.prisma.bloodDriveRegistration.findMany({
       where: {
         profileId: profile.id,
-        appointmentDate: {
-          gte: new Date(),
+        status: 'registered',
+        bloodDrive: {
+          startDateTime: {
+            gte: new Date(),
+          },
         },
-        status: { code: 'confirmed' },
       },
       include: {
         bloodDrive: {
@@ -67,7 +69,7 @@ export class DonorsService {
           },
         },
       },
-      orderBy: { appointmentDate: 'asc' },
+      orderBy: { createdAt: 'desc' },
       take: 5,
     });
 
@@ -77,12 +79,12 @@ export class DonorsService {
       nextEligibleDate,
       bloodType: profile.bloodType?.name,
       isDonorVerified: profile.isDonorVerified,
-      upcomingAppointments: upcomingAppointments.map(apt => ({
-        id: apt.id,
-        date: apt.appointmentDate,
+      upcomingAppointments: upcomingRegistrations.map(reg => ({
+        id: reg.id,
+        date: reg.bloodDrive.startDateTime,
         bloodDrive: {
-          name: apt.bloodDrive.name,
-          location: apt.bloodDrive.location,
+          name: reg.bloodDrive.title,
+          location: reg.bloodDrive.address || reg.bloodDrive.city || '',
         },
       })),
       recentDonations: profile.donationRecords.map(donation => ({
@@ -127,7 +129,7 @@ export class DonorsService {
         donationDate: donation.donationDate,
         bloodType: donation.bloodType.name,
         volume: donation.volumeMl,
-        hemoglobin: donation.hemoglobin,
+        hemoglobin: donation.hemoglobinLevel,
         bloodPressure: donation.bloodPressure,
         status: 'completed', // Assuming all records are completed
         medicalCenter: {
