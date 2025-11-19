@@ -292,7 +292,7 @@ export default function BloodDrivesPage() {
                           <span className="text-muted-foreground">• {drive.medicalCenter.city}</span>
                         </div>
 
-                        {drive.distance !== Infinity && (
+                        {drive.distance !== undefined && drive.distance !== Infinity && (
                           <div className="flex items-center gap-2 text-sm">
                             <Navigation className="h-4 w-4 text-muted-foreground" />
                             <span>{drive.distance.toFixed(1)} km from nearest favorite location</span>
