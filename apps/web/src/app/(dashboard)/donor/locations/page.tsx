@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
 import {
   Dialog,
   DialogContent,
@@ -16,9 +17,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { LocationPicker } from '@/components/map/location-picker';
 import { apiClient } from '@/lib/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MapPin, Plus, Edit, Trash2, Info } from 'lucide-react';
+import { formatRadiusLabel } from '@/lib/utils/walking-time';
 
 interface FavoriteLocation {
   id: string;
@@ -41,9 +44,9 @@ export default function FavoriteLocationsPage() {
   const [addingLocation, setAddingLocation] = useState(false);
   const [newLocationData, setNewLocationData] = useState({
     name: '',
-    latitude: '',
-    longitude: '',
-    radiusKm: '5',
+    latitude: null as number | null,
+    longitude: null as number | null,
+    radiusKm: 5,
   });
 
   useEffect(() => {
@@ -71,22 +74,34 @@ export default function FavoriteLocationsPage() {
 
   const handleAddLocation = async () => {
     setError('');
+
+    // Validation
+    if (!newLocationData.name.trim()) {
+      setError('Please enter a location name');
+      return;
+    }
+
+    if (newLocationData.latitude === null || newLocationData.longitude === null) {
+      setError('Please select a location on the map');
+      return;
+    }
+
     setAddingLocation(true);
 
     try {
       await apiClient.post('/donors/favorite-locations', {
         name: newLocationData.name,
-        latitude: parseFloat(newLocationData.latitude),
-        longitude: parseFloat(newLocationData.longitude),
-        radiusKm: parseInt(newLocationData.radiusKm, 10),
+        latitude: newLocationData.latitude,
+        longitude: newLocationData.longitude,
+        radiusKm: newLocationData.radiusKm,
       });
       setSuccess('Location added successfully!');
       setAddLocationOpen(false);
       setNewLocationData({
         name: '',
-        latitude: '',
-        longitude: '',
-        radiusKm: '5',
+        latitude: null,
+        longitude: null,
+        radiusKm: 5,
       });
       loadLocations();
       setTimeout(() => setSuccess(''), 3000);
@@ -150,14 +165,20 @@ export default function FavoriteLocationsPage() {
                 Add Location
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add Favorite Location</DialogTitle>
                 <DialogDescription>
-                  Add a location to find nearby blood drives. We only store approximate coordinates for privacy.
+                  Click on the map to select your location, then set a search radius for finding nearby blood drives.
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 py-4">
+              <div className="space-y-6 py-4">
+                {error && (
+                  <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md text-sm">
+                    {error}
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="locationName">Location Name *</Label>
                   <Input
@@ -169,47 +190,47 @@ export default function FavoriteLocationsPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="latitude">Latitude *</Label>
-                    <Input
-                      id="latitude"
-                      type="number"
-                      step="0.000001"
-                      placeholder="13.7563"
-                      value={newLocationData.latitude}
-                      onChange={(e) => setNewLocationData({ ...newLocationData, latitude: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="longitude">Longitude *</Label>
-                    <Input
-                      id="longitude"
-                      type="number"
-                      step="0.000001"
-                      placeholder="100.5018"
-                      value={newLocationData.longitude}
-                      onChange={(e) => setNewLocationData({ ...newLocationData, longitude: e.target.value })}
-                      required
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label>Select Location on Map *</Label>
+                  <LocationPicker
+                    position={
+                      newLocationData.latitude !== null && newLocationData.longitude !== null
+                        ? [newLocationData.latitude, newLocationData.longitude]
+                        : null
+                    }
+                    onLocationChange={(lat, lng) => {
+                      setNewLocationData({ ...newLocationData, latitude: lat, longitude: lng });
+                      setError('');
+                    }}
+                    height="300px"
+                  />
+                  {newLocationData.latitude !== null && newLocationData.longitude !== null && (
+                    <p className="text-xs text-muted-foreground">
+                      Selected: {newLocationData.latitude.toFixed(6)}, {newLocationData.longitude.toFixed(6)}
+                    </p>
+                  )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="radiusKm">Search Radius (km) *</Label>
-                  <Input
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="radiusKm">Search Radius</Label>
+                    <span className="text-sm font-medium text-primary">
+                      {formatRadiusLabel(newLocationData.radiusKm)}
+                    </span>
+                  </div>
+                  <Slider
                     id="radiusKm"
-                    type="number"
-                    min="1"
-                    max="50"
-                    value={newLocationData.radiusKm}
-                    onChange={(e) => setNewLocationData({ ...newLocationData, radiusKm: e.target.value })}
-                    required
+                    min={1}
+                    max={50}
+                    step={1}
+                    value={[newLocationData.radiusKm]}
+                    onValueChange={(value) => setNewLocationData({ ...newLocationData, radiusKm: value[0] })}
+                    className="w-full"
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Approximate walking time: ~{parseInt(newLocationData.radiusKm || '5') * 12} minutes
-                  </p>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>1 km</span>
+                    <span>50 km</span>
+                  </div>
                 </div>
 
                 <div className="flex gap-2 pt-4">
@@ -218,7 +239,10 @@ export default function FavoriteLocationsPage() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => setAddLocationOpen(false)}
+                    onClick={() => {
+                      setAddLocationOpen(false);
+                      setError('');
+                    }}
                     disabled={addingLocation}
                   >
                     Cancel
