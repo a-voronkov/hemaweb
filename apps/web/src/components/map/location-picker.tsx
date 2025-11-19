@@ -22,11 +22,17 @@ const Marker = dynamic(
   { ssr: false }
 );
 
+const Circle = dynamic(
+  () => import('react-leaflet').then((mod) => mod.Circle),
+  { ssr: false }
+);
+
 interface LocationPickerProps {
   lat?: number;
   lng?: number;
   address?: string;
   city?: string;
+  radiusKm?: number;
   onLocationChange: (lat: number, lng: number) => void;
   height?: string;
 }
@@ -40,13 +46,14 @@ function MapClickHandler({ onLocationChange }: { onLocationChange: (lat: number,
   return null;
 }
 
-export function LocationPicker({ 
-  lat, 
-  lng, 
+export function LocationPicker({
+  lat,
+  lng,
   address,
   city,
+  radiusKm = 5,
   onLocationChange,
-  height = '400px' 
+  height = '400px'
 }: LocationPickerProps) {
   const [isClient, setIsClient] = useState(false);
   const [position, setPosition] = useState<[number, number] | null>(
@@ -139,7 +146,21 @@ export function LocationPicker({
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <MapClickHandler onLocationChange={handleLocationChange} />
-          {position && <Marker position={position} />}
+          {position && (
+            <>
+              <Marker position={position} />
+              <Circle
+                center={position}
+                radius={radiusKm * 1000} // Convert km to meters
+                pathOptions={{
+                  color: '#22c55e',
+                  fillColor: '#22c55e',
+                  fillOpacity: 0.2,
+                  weight: 2,
+                }}
+              />
+            </>
+          )}
         </MapContainer>
       </div>
       

@@ -195,12 +195,16 @@ export default function FavoriteLocationsPage() {
                   <LocationPicker
                     lat={newLocationData.latitude ?? undefined}
                     lng={newLocationData.longitude ?? undefined}
+                    radiusKm={newLocationData.radiusKm}
                     onLocationChange={(lat, lng) => {
                       setNewLocationData({ ...newLocationData, latitude: lat, longitude: lng });
                       setError('');
                     }}
                     height="300px"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Click on the map to select your location. The green circle shows the search radius.
+                  </p>
                 </div>
 
                 <div className="space-y-3">
