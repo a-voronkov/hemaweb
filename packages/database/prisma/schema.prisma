@@ -200,11 +200,32 @@ model Profile {
   verificationRecords VerificationRecord[]
   donationRecords     DonationRecord[]
   bloodDriveRegistrations BloodDriveRegistration[]
+  favoriteLocations   DonorFavoriteLocation[]
 
   @@index([userId])
   @@index([bloodTypeId])
   @@index([isDonorVerified])
   @@map("profiles")
+}
+
+// Donor Favorite Locations (for finding nearby blood drives)
+model DonorFavoriteLocation {
+  id          String   @id @default(cuid())
+  profileId   String
+  name        String   // e.g., "Home", "Work", "University"
+  latitude    Float
+  longitude   Float
+  radiusKm    Int      @default(5) // Search radius in kilometers
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([isActive])
+  @@map("donor_favorite_locations")
 }
 
 // Medical Center Staff Profile (Staff, Admin, Super Admin)

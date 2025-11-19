@@ -114,28 +114,43 @@ export class EmailService {
   }
 
   /**
+   * Escape HTML entities
+   */
+  private escapeHtml(text: string): string {
+    const map: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, (m) => map[m]);
+  }
+
+  /**
    * Send verification email
    */
   async sendVerificationEmail(to: string, token: string, name: string) {
-    const verificationUrl = `${this.config.get('app.frontendUrl')}/verify-email?token=${token}`;
+    const verificationUrl = `${this.config.get('app.frontendUrl')}/verify-email?token=${encodeURIComponent(token)}`;
+    const escapedName = this.escapeHtml(name);
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Welcome to HemaWeb, ${name}!</h2>
+        <h2>Welcome to HemaWeb, ${escapedName}!</h2>
         <p>Thank you for registering. Please verify your email address by clicking the button below:</p>
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${verificationUrl}"
+          <a href="${this.escapeHtml(verificationUrl)}"
              style="background-color: #dc2626; color: white; padding: 12px 30px;
                     text-decoration: none; border-radius: 5px; display: inline-block;">
             Verify Email
           </a>
         </div>
         <p>Or copy and paste this link into your browser:</p>
-        <p style="color: #666; word-break: break-all;">${verificationUrl}</p>
+        <p style="color: #666; word-break: break-all;">${this.escapeHtml(verificationUrl)}</p>
         <p>This link will expire in 24 hours.</p>
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
         <p style="color: #999; font-size: 12px;">
-          If you didn't create an account, please ignore this email.
+          If you didn&#039;t create an account, please ignore this email.
         </p>
       </div>
     `;
@@ -147,26 +162,27 @@ export class EmailService {
    * Send password reset email
    */
   async sendPasswordResetEmail(to: string, token: string, name: string) {
-    const resetUrl = `${this.config.get('app.frontendUrl')}/reset-password?token=${token}`;
+    const resetUrl = `${this.config.get('app.frontendUrl')}/reset-password?token=${encodeURIComponent(token)}`;
+    const escapedName = this.escapeHtml(name);
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Password Reset Request</h2>
-        <p>Hi ${name},</p>
+        <p>Hi ${escapedName},</p>
         <p>We received a request to reset your password. Click the button below to reset it:</p>
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${resetUrl}"
+          <a href="${this.escapeHtml(resetUrl)}"
              style="background-color: #dc2626; color: white; padding: 12px 30px;
                     text-decoration: none; border-radius: 5px; display: inline-block;">
             Reset Password
           </a>
         </div>
         <p>Or copy and paste this link into your browser:</p>
-        <p style="color: #666; word-break: break-all;">${resetUrl}</p>
+        <p style="color: #666; word-break: break-all;">${this.escapeHtml(resetUrl)}</p>
         <p>This link will expire in 1 hour.</p>
         <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
         <p style="color: #999; font-size: 12px;">
-          If you didn't request a password reset, please ignore this email or contact support if you have concerns.
+          If you didn&#039;t request a password reset, please ignore this email or contact support if you have concerns.
         </p>
       </div>
     `;

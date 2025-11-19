@@ -40,6 +40,11 @@ export const navigationConfig: Record<string, RoleNavigation> = {
         description: 'Track your impact and achievements',
       },
       {
+        label: 'Locations',
+        href: '/donor/locations',
+        description: 'Manage favorite locations',
+      },
+      {
         label: 'Profile',
         href: '/profile',
         description: 'Manage your profile',
