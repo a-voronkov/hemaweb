@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { BloodDrivesService } from './blood-drives.service';
 import { CreateBloodDriveDto } from './dto/create-blood-drive.dto';
 import { UpdateBloodDriveDto } from './dto/update-blood-drive.dto';
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -156,9 +157,34 @@ export class BloodDrivesController {
   @ApiResponse({ status: 400, description: 'Not eligible or drive is full' })
   async bookAppointment(
     @Request() req,
-    @Body() body: { bloodDriveId: string; appointmentDate: string },
+    @Body() body: CreateAppointmentDto,
   ) {
-    return this.bloodDrivesService.bookAppointment(req.user.id, body.bloodDriveId, body.appointmentDate);
+    return this.bloodDrivesService.bookAppointment(
+      req.user.id,
+      body.bloodDriveId,
+      body.appointmentDate,
+      body.appointmentTime
+    );
+  }
+
+  @Get('appointments/my')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('donor')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get my appointments (Donor only)' })
+  @ApiResponse({ status: 200, description: 'Appointments retrieved' })
+  async getMyAppointments(@Request() req) {
+    return this.bloodDrivesService.getMyAppointments(req.user.id);
+  }
+
+  @Delete('appointments/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('donor')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cancel appointment (Donor only)' })
+  @ApiResponse({ status: 200, description: 'Appointment cancelled' })
+  async cancelAppointment(@Request() req, @Param('id') id: string) {
+    return this.bloodDrivesService.cancelAppointment(req.user.id, id);
   }
 }
 

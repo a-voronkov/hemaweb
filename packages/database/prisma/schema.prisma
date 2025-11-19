@@ -313,6 +313,7 @@ model MedicalCenter {
   logoUrl        String?
   website        String?
   operatingHours Json? // { "monday": "08:00-17:00", ... }
+  workingHours   Json? // { "monday": { "isOpen": true, "openTime": "08:00", "closeTime": "17:00" }, ... }
   isActive       Boolean   @default(true)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -394,13 +395,16 @@ model BloodDriveBloodType {
 
 // Blood Drive Registrations
 model BloodDriveRegistration {
-  id           String   @id @default(cuid())
-  bloodDriveId String
-  profileId    String
-  status       String   @default("registered") // registered, attended, cancelled
-  notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                 String   @id @default(cuid())
+  bloodDriveId       String
+  profileId          String
+  confirmationNumber String   @unique
+  appointmentDate    DateTime
+  appointmentTime    String
+  status             String   @default("registered") // registered, attended, cancelled
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   // Relations
   bloodDrive BloodDrive @relation(fields: [bloodDriveId], references: [id], onDelete: Cascade)
@@ -409,6 +413,7 @@ model BloodDriveRegistration {
   @@unique([bloodDriveId, profileId])
   @@index([bloodDriveId])
   @@index([profileId])
+  @@index([confirmationNumber])
   @@map("blood_drive_registrations")
 }
 

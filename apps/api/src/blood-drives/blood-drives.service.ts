@@ -523,9 +523,23 @@ export class BloodDrivesService {
   }
 
   /**
+   * Generate unique confirmation number
+   */
+  private generateConfirmationNumber(): string {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+    return `BD-${timestamp}-${random}`;
+  }
+
+  /**
    * Book appointment for blood drive
    */
-  async bookAppointment(userId: string, bloodDriveId: string, appointmentDate: string) {
+  async bookAppointment(
+    userId: string,
+    bloodDriveId: string,
+    appointmentDate: string,
+    appointmentTime: string
+  ) {
     // Get donor profile
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
@@ -544,6 +558,7 @@ export class BloodDrivesService {
             registrations: true,
           },
         },
+        medicalCenter: true,
       },
     });
 
@@ -568,18 +583,146 @@ export class BloodDrivesService {
       throw new BadRequestException('Already registered for this blood drive');
     }
 
+    // Check if time slot is available (max 1 donor per hour)
+    const appointmentDateTime = new Date(appointmentDate);
+    const existingAppointments = await this.prisma.bloodDriveRegistration.count({
+      where: {
+        bloodDriveId,
+        appointmentDate: appointmentDateTime,
+        appointmentTime,
+        status: { not: 'cancelled' },
+      },
+    });
+
+    if (existingAppointments >= 1) {
+      throw new BadRequestException('This time slot is already booked');
+    }
+
+    // Generate unique confirmation number
+    let confirmationNumber = this.generateConfirmationNumber();
+    let attempts = 0;
+    while (attempts < 5) {
+      const existing = await this.prisma.bloodDriveRegistration.findUnique({
+        where: { confirmationNumber },
+      });
+      if (!existing) break;
+      confirmationNumber = this.generateConfirmationNumber();
+      attempts++;
+    }
+
     // Create registration
     const registration = await this.prisma.bloodDriveRegistration.create({
       data: {
         bloodDriveId,
         profileId: profile.id,
+        confirmationNumber,
+        appointmentDate: appointmentDateTime,
+        appointmentTime,
         status: 'registered',
+      },
+      include: {
+        bloodDrive: {
+          include: {
+            medicalCenter: true,
+          },
+        },
       },
     });
 
     return {
       message: 'Appointment booked successfully',
       data: registration,
+    };
+  }
+
+  /**
+   * Get donor's appointments
+   */
+  async getMyAppointments(userId: string) {
+    // Get donor profile
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Donor profile not found');
+    }
+
+    const appointments = await this.prisma.bloodDriveRegistration.findMany({
+      where: {
+        profileId: profile.id,
+        status: { not: 'cancelled' },
+      },
+      include: {
+        bloodDrive: {
+          include: {
+            medicalCenter: true,
+          },
+        },
+      },
+      orderBy: {
+        appointmentDate: 'asc',
+      },
+    });
+
+    return {
+      data: appointments.map(apt => ({
+        id: apt.id,
+        confirmationNumber: apt.confirmationNumber,
+        appointmentDate: apt.appointmentDate,
+        appointmentTime: apt.appointmentTime,
+        status: apt.status,
+        bloodDrive: {
+          id: apt.bloodDrive.id,
+          name: apt.bloodDrive.title,
+          location: apt.bloodDrive.address || apt.bloodDrive.city || '',
+          medicalCenter: {
+            id: apt.bloodDrive.medicalCenter.id,
+            name: apt.bloodDrive.medicalCenter.name,
+            city: apt.bloodDrive.medicalCenter.city,
+          },
+        },
+      })),
+    };
+  }
+
+  /**
+   * Cancel appointment
+   */
+  async cancelAppointment(userId: string, appointmentId: string) {
+    // Get donor profile
+    const profile = await this.prisma.profile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Donor profile not found');
+    }
+
+    // Find appointment
+    const appointment = await this.prisma.bloodDriveRegistration.findUnique({
+      where: { id: appointmentId },
+    });
+
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found');
+    }
+
+    // Verify ownership
+    if (appointment.profileId !== profile.id) {
+      throw new ForbiddenException('You can only cancel your own appointments');
+    }
+
+    // Update status to cancelled
+    await this.prisma.bloodDriveRegistration.update({
+      where: { id: appointmentId },
+      data: {
+        status: 'cancelled',
+      },
+    });
+
+    return {
+      message: 'Appointment cancelled successfully',
     };
   }
 }

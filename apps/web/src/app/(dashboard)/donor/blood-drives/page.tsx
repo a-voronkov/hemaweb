@@ -17,6 +17,16 @@ const BloodDrivesMap = dynamic(
   { ssr: false }
 );
 
+const AppointmentBookingDialog = dynamic(
+  () => import('@/components/blood-drives/appointment-booking-dialog').then((mod) => mod.AppointmentBookingDialog),
+  { ssr: false }
+);
+
+const AppointmentDetailsDialog = dynamic(
+  () => import('@/components/blood-drives/appointment-details-dialog').then((mod) => mod.AppointmentDetailsDialog),
+  { ssr: false }
+);
+
 interface FavoriteLocation {
   id: string;
   name: string;
@@ -24,6 +34,23 @@ interface FavoriteLocation {
   longitude: number;
   radiusKm: number;
   isActive: boolean;
+}
+
+interface Appointment {
+  id: string;
+  confirmationNumber: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  bloodDrive: {
+    id: string;
+    name: string;
+    location: string;
+    medicalCenter: {
+      id: string;
+      name: string;
+      city: string;
+    };
+  };
 }
 
 interface BloodDrive {
@@ -42,12 +69,15 @@ interface BloodDrive {
     city: string;
     locationLat?: number;
     locationLng?: number;
+    workingHours?: any;
   };
   _count?: {
     appointments: number;
   };
   distance?: number;
   isWithinFavoriteRadius?: boolean;
+  hasAppointment?: boolean;
+  myAppointment?: Appointment;
 }
 
 export default function BloodDrivesPage() {
@@ -56,11 +86,18 @@ export default function BloodDrivesPage() {
   const [loading, setLoading] = useState(true);
   const [bloodDrives, setBloodDrives] = useState<BloodDrive[]>([]);
   const [favoriteLocations, setFavoriteLocations] = useState<FavoriteLocation[]>([]);
+  const [myAppointments, setMyAppointments] = useState<Appointment[]>([]);
   const [filteredDrives, setFilteredDrives] = useState<BloodDrive[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Dialog states
+  const [bookingDialogOpen, setBookingDialogOpen] = useState(false);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [selectedDrive, setSelectedDrive] = useState<BloodDrive | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
 
   const ITEMS_PER_PAGE = 10;
 
@@ -124,12 +161,17 @@ export default function BloodDrivesPage() {
 
   // Process and sort blood drives
   const processedDrives = useMemo(() => {
-    return bloodDrives.map(drive => ({
-      ...drive,
-      distance: getMinDistanceToFavorites(drive),
-      isWithinFavoriteRadius: isWithinFavoriteRadius(drive),
-    })).sort((a, b) => a.distance - b.distance);
-  }, [bloodDrives, favoriteLocations]);
+    return bloodDrives.map(drive => {
+      const myAppointment = myAppointments.find(apt => apt.bloodDrive.id === drive.id);
+      return {
+        ...drive,
+        distance: getMinDistanceToFavorites(drive),
+        isWithinFavoriteRadius: isWithinFavoriteRadius(drive),
+        hasAppointment: !!myAppointment,
+        myAppointment,
+      };
+    }).sort((a, b) => a.distance - b.distance);
+  }, [bloodDrives, favoriteLocations, myAppointments]);
 
   // Filter drives based on search
   useEffect(() => {
@@ -157,18 +199,38 @@ export default function BloodDrivesPage() {
 
   const loadData = async () => {
     try {
-      const [drivesRes, locationsRes] = await Promise.all([
+      const [drivesRes, locationsRes, appointmentsRes] = await Promise.all([
         apiClient.get<{ data: BloodDrive[] }>('/blood-drives/upcoming'),
         apiClient.get<{ data: FavoriteLocation[] }>('/donors/favorite-locations'),
+        apiClient.get<{ data: Appointment[] }>('/blood-drives/appointments/my'),
       ]);
 
       setBloodDrives(drivesRes.data);
       setFavoriteLocations(locationsRes.data);
+      setMyAppointments(appointmentsRes.data);
     } catch (err: any) {
       setError(err.message || 'Failed to load data');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBookClick = (drive: BloodDrive) => {
+    setSelectedDrive(drive);
+    setBookingDialogOpen(true);
+  };
+
+  const handleViewAppointment = (drive: BloodDrive) => {
+    if (drive.myAppointment) {
+      setSelectedAppointment(drive.myAppointment);
+      setDetailsDialogOpen(true);
+    }
+  };
+
+  const handleBookingSuccess = () => {
+    setSuccess('Appointment booked successfully!');
+    loadData();
+    setTimeout(() => setSuccess(''), 3000);
   };
 
   const handleBookAppointment = async (bloodDriveId: string) => {
@@ -258,7 +320,11 @@ export default function BloodDrivesPage() {
                   <Card
                     key={drive.id}
                     className={`hover:shadow-md transition-shadow ${
-                      drive.isWithinFavoriteRadius ? 'border-red-500 border-2' : ''
+                      drive.hasAppointment
+                        ? 'border-green-500 border-2 bg-green-50'
+                        : drive.isWithinFavoriteRadius
+                        ? 'border-red-500 border-2'
+                        : ''
                     }`}
                   >
                     <CardHeader>
@@ -266,7 +332,12 @@ export default function BloodDrivesPage() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <CardTitle className="text-lg">{drive.name}</CardTitle>
-                            {drive.isWithinFavoriteRadius && (
+                            {drive.hasAppointment && (
+                              <Badge variant="default" className="bg-green-600">
+                                Booked
+                              </Badge>
+                            )}
+                            {!drive.hasAppointment && drive.isWithinFavoriteRadius && (
                               <Badge variant="default" className="bg-red-500">
                                 Near Favorite
                               </Badge>
@@ -323,13 +394,23 @@ export default function BloodDrivesPage() {
                         )}
 
                         <div className="pt-3">
-                          <Button
-                            onClick={() => handleBookAppointment(drive.id)}
-                            disabled={isFull(drive)}
-                            className="w-full"
-                          >
-                            {isFull(drive) ? 'Fully Booked' : 'Book Appointment'}
-                          </Button>
+                          {drive.hasAppointment ? (
+                            <Button
+                              onClick={() => handleViewAppointment(drive)}
+                              variant="default"
+                              className="w-full bg-green-600 hover:bg-green-700"
+                            >
+                              View Appointment
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={() => handleBookClick(drive)}
+                              disabled={isFull(drive)}
+                              className="w-full"
+                            >
+                              {isFull(drive) ? 'Fully Booked' : 'Book Appointment'}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -383,6 +464,26 @@ export default function BloodDrivesPage() {
           </div>
         </div>
       </div>
+
+      {/* Booking Dialog */}
+      {selectedDrive && (
+        <AppointmentBookingDialog
+          open={bookingDialogOpen}
+          onOpenChange={setBookingDialogOpen}
+          bloodDrive={selectedDrive}
+          onSuccess={handleBookingSuccess}
+        />
+      )}
+
+      {/* Appointment Details Dialog */}
+      {selectedAppointment && (
+        <AppointmentDetailsDialog
+          open={detailsDialogOpen}
+          onOpenChange={setDetailsDialogOpen}
+          appointment={selectedAppointment}
+          onCancel={handleBookingSuccess}
+        />
+      )}
     </MainLayout>
   );
 }

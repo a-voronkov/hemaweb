@@ -381,6 +381,7 @@ export class MedicalCentersService {
       email?: string;
       locationLat?: number;
       locationLng?: number;
+      workingHours?: any;
       isActive?: boolean;
     }
   ) {
