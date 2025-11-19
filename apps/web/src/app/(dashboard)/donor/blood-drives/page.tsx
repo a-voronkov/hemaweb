@@ -239,8 +239,7 @@ export default function BloodDrivesPage() {
         </div>
 
         {/* Two-column layout: List on left, Map on right */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left column: Blood Drives List */}
           <div className="space-y-4">
             {paginatedDrives.length === 0 ? (
