@@ -24,6 +24,53 @@ export class AuthService {
   }
 
   /**
+   * Transform Prisma Profile to simplified DTO format
+   */
+  private transformProfile(profile: {
+    id: string;
+    userId: string;
+    firstName: string;
+    lastName: string;
+    phone: string | null;
+    dateOfBirth: Date | null;
+    address: string | null;
+    lastDonationDate: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    bloodType?: { code: string } | null;
+  }): {
+    id: string;
+    userId: string;
+    firstName: string;
+    lastName: string;
+    phone: string | null;
+    dateOfBirth: Date | null;
+    address: string | null;
+    bloodType: string | null;
+    lastDonationDate: Date | null;
+    emergencyContact: string | null;
+    medicalNotes: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  } {
+    return {
+      id: profile.id,
+      userId: profile.userId,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      phone: profile.phone,
+      dateOfBirth: profile.dateOfBirth,
+      address: profile.address,
+      bloodType: profile.bloodType?.code ?? null,
+      lastDonationDate: profile.lastDonationDate,
+      emergencyContact: null, // Not in current schema
+      medicalNotes: null, // Not in current schema
+      createdAt: profile.createdAt,
+      updatedAt: profile.updatedAt,
+    };
+  }
+
+  /**
    * Register a new user (donor)
    */
   async register(
@@ -89,7 +136,11 @@ export class AuthService {
         },
       },
       include: {
-        profile: true,
+        profile: {
+          include: {
+            bloodType: true,
+          },
+        },
       },
     });
 
@@ -104,7 +155,11 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
-      profile: user.profile,
+      profile: user.profile
+        ? this.transformProfile(
+            user.profile as Parameters<typeof this.transformProfile>[0],
+          )
+        : null,
     };
   }
 
@@ -204,7 +259,11 @@ export class AuthService {
       where: { id: userId },
       include: {
         role: true,
-        profile: true,
+        profile: {
+          include: {
+            bloodType: true,
+          },
+        },
       },
     });
 
@@ -222,6 +281,11 @@ export class AuthService {
         code: user.role.code,
         name: user.role.name,
       },
+      profile: user.profile
+        ? this.transformProfile(
+            user.profile as Parameters<typeof this.transformProfile>[0],
+          )
+        : null,
     };
   }
 
@@ -303,7 +367,10 @@ export class AuthService {
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.passwordHash as string,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Password is incorrect');
     }
