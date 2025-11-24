@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -21,7 +26,31 @@ export class AuthService {
   /**
    * Register a new user (donor)
    */
-  async register(email: string, password: string, firstName: string, lastName: string, phone: string) {
+  async register(
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+    phone: string,
+  ): Promise<{
+    id: string;
+    email: string;
+    profile: {
+      id: string;
+      userId: string;
+      firstName: string;
+      lastName: string;
+      phone: string | null;
+      dateOfBirth: Date | null;
+      address: string | null;
+      bloodType: string | null;
+      lastDonationDate: Date | null;
+      emergencyContact: string | null;
+      medicalNotes: string | null;
+      createdAt: Date;
+      updatedAt: Date;
+    } | null;
+  }> {
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -66,7 +95,7 @@ export class AuthService {
 
     // Send verification email
     try {
-      await this.verificationService.sendVerificationEmail(user.id);
+      await this.verificationService.sendVerificationEmail(user.id as string);
     } catch (error) {
       // Log error but don't fail registration
       console.error('Failed to send verification email:', error);
@@ -82,7 +111,10 @@ export class AuthService {
   /**
    * Login user
    */
-  async login(email: string, password: string): Promise<{ user: User; session: Session }> {
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ user: User; session: Session }> {
     // Find user
     const user = await this.prisma.user.findUnique({
       where: { email },
@@ -98,14 +130,17 @@ export class AuthService {
     }
 
     // Verify password
-    const validPassword = await bcrypt.compare(password, user.passwordHash);
+    const validPassword = await bcrypt.compare(
+      password,
+      user.passwordHash as string,
+    );
     if (!validPassword) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
     // Create session
-    const session = await this.lucia.createSession(user.id, {});
-    
+    const session = await this.lucia.createSession(user.id as string, {});
+
     return {
       user: {
         id: user.id,
@@ -136,7 +171,35 @@ export class AuthService {
   /**
    * Get user with role information
    */
-  async getUserWithRole(userId: string) {
+  async getUserWithRole(userId: string): Promise<{
+    id: string;
+    email: string;
+    roleId: string;
+    isActive: boolean;
+    isVerified: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    role: {
+      id: string;
+      code: string;
+      name: string;
+    };
+    profile: {
+      id: string;
+      userId: string;
+      firstName: string;
+      lastName: string;
+      phone: string | null;
+      dateOfBirth: Date | null;
+      address: string | null;
+      bloodType: string | null;
+      lastDonationDate: Date | null;
+      emergencyContact: string | null;
+      medicalNotes: string | null;
+      createdAt: Date;
+      updatedAt: Date;
+    } | null;
+  }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -149,6 +212,7 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...userWithoutPassword } = user;
 
     return {
@@ -178,7 +242,11 @@ export class AuthService {
   /**
    * Change user password
    */
-  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
     // Get user
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -189,14 +257,19 @@ export class AuthService {
     }
 
     // Verify current password
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.passwordHash as string,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
     // Validate new password
     if (newPassword.length < 8) {
-      throw new BadRequestException('Password must be at least 8 characters long');
+      throw new BadRequestException(
+        'Password must be at least 8 characters long',
+      );
     }
 
     // Hash new password
@@ -257,8 +330,8 @@ export class AuthService {
     // await this.verificationService.sendVerificationEmail(newEmail);
 
     return {
-      message: 'Email changed successfully. Please verify your new email address.',
+      message:
+        'Email changed successfully. Please verify your new email address.',
     };
   }
 }
-
