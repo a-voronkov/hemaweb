@@ -26,10 +26,36 @@ export default function LoginPage() {
     setError('');
 
     try {
-      await login({ email, password });
-      router.push('/');
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+      const userData = await login({ email, password });
+
+      // Wait for React to process state updates
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Role-based redirect
+      const roleCode = userData?.role?.code;
+      switch (roleCode) {
+        case 'donor':
+          router.push('/donor/dashboard');
+          break;
+        case 'staff':
+        case 'admin':
+          router.push('/staff/dashboard');
+          break;
+        case 'super_admin':
+          router.push('/admin');
+          break;
+        case 'system_admin':
+          router.push('/system-admin/dashboard');
+          break;
+        default:
+          router.push('/');
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Login failed. Please check your credentials.');
+      }
     }
   };
 
@@ -55,9 +81,7 @@ export default function LoginPage() {
             </div>
           </div>
           <CardTitle className="text-2xl font-bold">Welcome to HemaWeb</CardTitle>
-          <CardDescription>
-            Sign in to your account to continue
-          </CardDescription>
+          <CardDescription>Sign in to your account to continue</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -83,10 +107,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-primary hover:underline"
-                >
+                <Link href="/forgot-password" className="text-sm text-primary hover:underline">
                   Forgot password?
                 </Link>
               </div>
@@ -107,11 +128,7 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
 
@@ -127,4 +144,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

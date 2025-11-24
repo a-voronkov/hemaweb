@@ -13,8 +13,8 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  login: (data: LoginRequest) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  login: (data: LoginRequest) => Promise<User>;
+  register: (data: RegisterRequest) => Promise<User>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (data: LoginRequest) => {
+  const login = async (data: LoginRequest): Promise<User> => {
     try {
       setError(null);
       setLoading(true);
@@ -72,15 +72,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         bloodType: response.user.profile?.bloodType,
       };
       setUser(userData);
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
+      return userData;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || 'Login failed');
       throw err;
     } finally {
       setLoading(false);
     }
   };
 
-  const register = async (data: RegisterRequest) => {
+  const register = async (data: RegisterRequest): Promise<User> => {
     try {
       setError(null);
       setLoading(true);
@@ -96,8 +98,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         bloodType: response.user.profile?.bloodType,
       };
       setUser(userData);
-    } catch (err: any) {
-      setError(err.message || 'Registration failed');
+      return userData;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || 'Registration failed');
       throw err;
     } finally {
       setLoading(false);
@@ -113,8 +117,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== 'undefined') {
         window.location.href = '/';
       }
-    } catch (err: any) {
-      setError(err.message || 'Logout failed');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || 'Logout failed');
       throw err;
     } finally {
       setLoading(false);
@@ -149,4 +154,3 @@ export function useAuth() {
   }
   return context;
 }
-
