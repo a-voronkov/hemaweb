@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
-import Mailjet from 'node-mailjet';
+import * as Mailjet from 'node-mailjet';
 
 @Injectable()
 export class EmailService {
@@ -50,7 +50,9 @@ export class EmailService {
           pass: testAccount.pass,
         },
       });
-      this.logger.log(`Using Ethereal email for development: ${testAccount.user}`);
+      this.logger.log(
+        `Using Ethereal email for development: ${testAccount.user}`,
+      );
     }
   }
 
@@ -89,7 +91,8 @@ export class EmailService {
    */
   private async sendViaSmtp(to: string, subject: string, html: string) {
     const info = await this.transporter.sendMail({
-      from: this.config.get('email.from') || '"HemaWeb" <noreply@hemaweb.world>',
+      from:
+        this.config.get('email.from') || '"HemaWeb" <noreply@hemaweb.world>',
       to,
       subject,
       html,
@@ -122,7 +125,7 @@ export class EmailService {
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
-      "'": '&#039;'
+      "'": '&#039;',
     };
     return text.replace(/[&<>"']/g, (m) => map[m]);
   }
@@ -232,13 +235,16 @@ export class EmailService {
       bloodTypesNeeded?: Array<{ bloodType: { name: string } }>;
     },
   ) {
-    const driveDate = new Date(bloodDrive.startDateTime).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const driveDate = new Date(bloodDrive.startDateTime).toLocaleDateString(
+      'en-US',
+      {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      },
+    );
 
     const bloodTypesHtml = bloodDrive.bloodTypesNeeded?.length
       ? `
@@ -291,11 +297,14 @@ export class EmailService {
     name: string,
     nextEligibleDate: string,
   ) {
-    const eligibleDate = new Date(nextEligibleDate).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    const eligibleDate = new Date(nextEligibleDate).toLocaleDateString(
+      'en-US',
+      {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      },
+    );
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -343,16 +352,24 @@ export class EmailService {
     bloodDrive: {
       title: string;
       startDateTime: string;
-      medicalCenter: { name: string; address?: string; city?: string; phone?: string };
+      medicalCenter: {
+        name: string;
+        address?: string;
+        city?: string;
+        phone?: string;
+      };
     },
   ) {
-    const driveDate = new Date(bloodDrive.startDateTime).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const driveDate = new Date(bloodDrive.startDateTime).toLocaleDateString(
+      'en-US',
+      {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      },
+    );
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -389,7 +406,10 @@ export class EmailService {
       </div>
     `;
 
-    return this.sendEmail(to, `Blood Drive Registration Confirmed - ${bloodDrive.title}`, html);
+    return this.sendEmail(
+      to,
+      `Blood Drive Registration Confirmed - ${bloodDrive.title}`,
+      html,
+    );
   }
 }
-
