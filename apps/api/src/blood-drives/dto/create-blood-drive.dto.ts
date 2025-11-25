@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsDateString, IsArray, IsNumber, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsDateString,
+  IsArray,
+  IsNumber,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateBloodDriveDto {
   @ApiProperty({
@@ -97,4 +105,3 @@ export class CreateBloodDriveDto {
   @IsNumber()
   radiusKm?: number;
 }
-

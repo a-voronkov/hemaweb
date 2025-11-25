@@ -4,6 +4,7 @@ import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 
 // Use require for Mailjet to avoid TypeScript import issues
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const Mailjet = require('node-mailjet');
 
 @Injectable()
@@ -14,7 +15,7 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
 
   constructor(private config: ConfigService) {
-    this.initializeEmailProvider();
+    void this.initializeEmailProvider();
   }
 
   private async initializeEmailProvider() {

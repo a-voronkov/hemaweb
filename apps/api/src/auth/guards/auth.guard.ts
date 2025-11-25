@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from '../auth.service';
 
@@ -8,10 +13,10 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    
+
     // Get session ID from cookie
     const sessionId = request.cookies['session'];
-    
+
     if (!sessionId) {
       throw new UnauthorizedException('No session found');
     }
@@ -30,4 +35,3 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 }
-

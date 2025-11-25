@@ -11,7 +11,13 @@ import {
   UseGuards,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { VerificationService } from './verification.service';
@@ -65,7 +71,11 @@ export class AuthController {
 
     // Set session cookie
     const sessionCookie = this.authService.createSessionCookie(session.id);
-    response.cookie(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+    response.cookie(
+      sessionCookie.name,
+      sessionCookie.value,
+      sessionCookie.attributes,
+    );
 
     return {
       message: 'Login successful',
@@ -89,14 +99,18 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     const sessionId = request.cookies['session'];
-    
+
     if (sessionId) {
       await this.authService.logout(sessionId);
     }
 
     // Clear session cookie
     const blankCookie = this.authService.createBlankSessionCookie();
-    response.cookie(blankCookie.name, blankCookie.value, blankCookie.attributes);
+    response.cookie(
+      blankCookie.name,
+      blankCookie.value,
+      blankCookie.attributes,
+    );
 
     return {
       message: 'Logout successful',
@@ -109,7 +123,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user info' })
   @ApiResponse({ status: 200, description: 'User info retrieved' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getCurrentUser(@Req() request: Request) {
+  getCurrentUser(@Req() request: Request) {
     return {
       user: request['user'],
     };
@@ -148,7 +162,11 @@ export class AuthController {
 
   @Get('verify-email')
   @ApiOperation({ summary: 'Verify email with token' })
-  @ApiQuery({ name: 'token', required: true, description: 'Verification token' })
+  @ApiQuery({
+    name: 'token',
+    required: true,
+    description: 'Verification token',
+  })
   @ApiResponse({ status: 200, description: 'Email verified successfully' })
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   async verifyEmail(@Query('token') token: string) {
@@ -200,17 +218,15 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Change email address (authenticated user)' })
   @ApiResponse({ status: 200, description: 'Email change request sent' })
-  @ApiResponse({ status: 400, description: 'Invalid password or email already in use' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid password or email already in use',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async changeEmail(
     @CurrentUser() user: any,
     @Body() body: { newEmail: string; password: string },
   ) {
-    return this.authService.changeEmail(
-      user.id,
-      body.newEmail,
-      body.password,
-    );
+    return this.authService.changeEmail(user.id, body.newEmail, body.password);
   }
 }
-

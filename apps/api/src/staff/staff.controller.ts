@@ -1,12 +1,10 @@
+import { Controller, Post, Put, Body, Param, UseGuards } from '@nestjs/common';
 import {
-  Controller,
-  Post,
-  Put,
-  Body,
-  Param,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -22,11 +20,14 @@ export class StaffController {
   @Post('admin/create')
   @UseGuards(RolesGuard)
   @Roles('super_admin', 'system_admin')
-  @ApiOperation({ summary: 'Create staff member (Super Admin/System Admin only)' })
+  @ApiOperation({
+    summary: 'Create staff member (Super Admin/System Admin only)',
+  })
   @ApiResponse({ status: 201, description: 'Staff member created' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   async createStaff(
-    @Body() body: {
+    @Body()
+    body: {
       email: string;
       password: string;
       firstName: string;
@@ -43,12 +44,15 @@ export class StaffController {
   @Put('admin/:id')
   @UseGuards(RolesGuard)
   @Roles('super_admin', 'system_admin')
-  @ApiOperation({ summary: 'Update staff member (Super Admin/System Admin only)' })
+  @ApiOperation({
+    summary: 'Update staff member (Super Admin/System Admin only)',
+  })
   @ApiResponse({ status: 200, description: 'Staff member updated' })
   @ApiResponse({ status: 404, description: 'Staff member not found' })
   async updateStaff(
     @Param('id') id: string,
-    @Body() body: {
+    @Body()
+    body: {
       firstName?: string;
       lastName?: string;
       position?: string;
@@ -58,4 +62,3 @@ export class StaffController {
     return this.staffService.updateStaff(id, body);
   }
 }
-

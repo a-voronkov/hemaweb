@@ -8,7 +8,12 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { OrganizationsService } from './organizations.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -47,7 +52,8 @@ export class OrganizationsController {
   @ApiResponse({ status: 201, description: 'Organization created' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   async createOrganization(
-    @Body() body: {
+    @Body()
+    body: {
       name: string;
       description?: string;
       email?: string;
@@ -66,7 +72,8 @@ export class OrganizationsController {
   @ApiResponse({ status: 404, description: 'Organization not found' })
   async updateOrganization(
     @Param('id') id: string,
-    @Body() body: {
+    @Body()
+    body: {
       name?: string;
       description?: string;
       email?: string;
@@ -88,4 +95,3 @@ export class OrganizationsController {
     return this.organizationsService.deleteOrganization(id);
   }
 }
-

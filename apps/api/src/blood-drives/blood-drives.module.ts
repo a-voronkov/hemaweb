@@ -12,4 +12,3 @@ import { EmailModule } from '../email/email.module';
   exports: [BloodDrivesService],
 })
 export class BloodDrivesModule {}
-

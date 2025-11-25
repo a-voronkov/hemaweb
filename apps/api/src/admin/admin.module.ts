@@ -13,4 +13,3 @@ import { AuthModule } from '../auth/auth.module';
   exports: [AdminService, SystemAdminsService],
 })
 export class AdminModule {}
-

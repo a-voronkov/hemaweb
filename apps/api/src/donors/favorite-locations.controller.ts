@@ -8,7 +8,12 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -35,7 +40,8 @@ export class FavoriteLocationsController {
   @ApiResponse({ status: 201, description: 'Location added' })
   async addLocation(
     @CurrentUser() user: any,
-    @Body() body: {
+    @Body()
+    body: {
       name: string;
       latitude: number;
       longitude: number;
@@ -51,7 +57,8 @@ export class FavoriteLocationsController {
   async updateLocation(
     @CurrentUser() user: any,
     @Param('id') id: string,
-    @Body() body: {
+    @Body()
+    body: {
       name?: string;
       latitude?: number;
       longitude?: number;
@@ -70,10 +77,11 @@ export class FavoriteLocationsController {
   }
 
   @Get('nearby-drives')
-  @ApiOperation({ summary: 'Get blood drives near favorite locations (Donor only)' })
+  @ApiOperation({
+    summary: 'Get blood drives near favorite locations (Donor only)',
+  })
   @ApiResponse({ status: 200, description: 'Nearby drives retrieved' })
   async getNearbyDrives(@CurrentUser() user: any) {
     return this.favoriteLocationsService.getNearbyDrives(user.id);
   }
 }
-

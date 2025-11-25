@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
@@ -23,7 +27,7 @@ export class UsersService {
     }
 
     // Remove sensitive data
-    const { passwordHash, ...userWithoutPassword } = user;
+    const { passwordHash: _passwordHash, ...userWithoutPassword } = user;
 
     return {
       ...userWithoutPassword,
@@ -74,7 +78,7 @@ export class UsersService {
   /**
    * Get user by ID (for other users to view)
    */
-  async getUserById(userId: string, requestingUserId: string) {
+  async getUserById(userId: string, _requestingUserId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -91,9 +95,6 @@ export class UsersService {
     if (!user.isActive) {
       throw new ForbiddenException('User account is deactivated');
     }
-
-    // Remove sensitive data
-    const { passwordHash, ...userWithoutPassword } = user;
 
     // Return limited info for other users
     return {
@@ -115,7 +116,11 @@ export class UsersService {
   /**
    * Search users (admin only or by exact email)
    */
-  async searchUsers(query: string, page: number = 1, limit: number = 10): Promise<{
+  async searchUsers(
+    query: string,
+    page: number = 1,
+    limit: number = 10,
+  ): Promise<{
     data: any[];
     meta: { total: number; page: number; limit: number; totalPages: number };
   }> {
@@ -129,8 +134,16 @@ export class UsersService {
       : {
           OR: [
             { email: { contains: query, mode: 'insensitive' as const } },
-            { profile: { firstName: { contains: query, mode: 'insensitive' as const } } },
-            { profile: { lastName: { contains: query, mode: 'insensitive' as const } } },
+            {
+              profile: {
+                firstName: { contains: query, mode: 'insensitive' as const },
+              },
+            },
+            {
+              profile: {
+                lastName: { contains: query, mode: 'insensitive' as const },
+              },
+            },
           ],
         };
 
@@ -155,7 +168,9 @@ export class UsersService {
     ]);
 
     // Remove sensitive data
-    const usersWithoutPasswords = users.map(({ passwordHash, ...user }) => user);
+    const usersWithoutPasswords = users.map(
+      ({ passwordHash: _passwordHash, ...user }) => user,
+    );
 
     return {
       data: usersWithoutPasswords,
@@ -171,7 +186,11 @@ export class UsersService {
   /**
    * Get donation history for current user
    */
-  async getMyDonationHistory(userId: string, page: number = 1, limit: number = 20): Promise<{
+  async getMyDonationHistory(
+    userId: string,
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<{
     data: any[];
     meta: { total: number; page: number; limit: number; totalPages: number };
   }> {
@@ -288,7 +307,9 @@ export class UsersService {
     }
 
     // Calculate days until eligible
-    const daysUntilEligible = Math.ceil((nextEligible.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    const daysUntilEligible = Math.ceil(
+      (nextEligible.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+    );
 
     return {
       isEligible: false,
@@ -385,4 +406,3 @@ export class UsersService {
     return updated;
   }
 }
-

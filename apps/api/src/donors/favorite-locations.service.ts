@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -178,7 +182,9 @@ export class FavoriteLocationsService {
 
         // Find closest favorite location
         let minDistance = Infinity;
-        let closestLocation: typeof profile.favoriteLocations[0] | null = null;
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+        let closestLocation: (typeof profile.favoriteLocations)[0] | null =
+          null;
 
         for (const loc of profile.favoriteLocations) {
           const distance = this.calculateDistance(
@@ -241,4 +247,3 @@ export class FavoriteLocationsService {
     return degrees * (Math.PI / 180);
   }
 }
-

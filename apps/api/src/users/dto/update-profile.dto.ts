@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, MinLength, MaxLength, Matches, IsDateString, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  MinLength,
+  MaxLength,
+  Matches,
+  IsDateString,
+  IsEnum,
+} from 'class-validator';
 
 enum Gender {
   MALE = 'male',
@@ -82,4 +90,3 @@ export class UpdateProfileDto {
   @MaxLength(200)
   address?: string;
 }
-

@@ -13,4 +13,3 @@ import { EmailModule } from '../email/email.module';
   exports: [AuthService, VerificationService, AuthGuard, RolesGuard],
 })
 export class AuthModule {}
-

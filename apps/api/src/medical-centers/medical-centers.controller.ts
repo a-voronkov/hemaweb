@@ -1,5 +1,20 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { MedicalCentersService } from './medical-centers.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -29,12 +44,12 @@ export class MedicalCentersController {
   @ApiOperation({ summary: 'Search medical centers by location' })
   @ApiResponse({ status: 200, description: 'Nearby medical centers retrieved' })
   async searchNearby(
-    @Body() body: { lat: number; lng: number; radiusKm?: number }
+    @Body() body: { lat: number; lng: number; radiusKm?: number },
   ): Promise<{ data: any[] }> {
     return this.medicalCentersService.searchNearby(
       body.lat,
       body.lng,
-      body.radiusKm || 10
+      body.radiusKm || 10,
     );
   }
 
@@ -43,20 +58,24 @@ export class MedicalCentersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Verify a donor (staff/admin only)' })
   @ApiResponse({ status: 200, description: 'Donor verified successfully' })
-  @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - insufficient permissions',
+  })
   async verifyDonor(
     @Request() req,
-    @Body() body: {
+    @Body()
+    body: {
       donorUserId: string;
       medicalCenterId: string;
       notes?: string;
-    }
+    },
   ) {
     return this.medicalCentersService.verifyDonor(
       req.user.id,
       body.donorUserId,
       body.medicalCenterId,
-      body.notes
+      body.notes,
     );
   }
 
@@ -65,16 +84,20 @@ export class MedicalCentersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Record a blood donation (staff/admin only)' })
   @ApiResponse({ status: 200, description: 'Donation recorded successfully' })
-  @ApiResponse({ status: 403, description: 'Forbidden - insufficient permissions' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - insufficient permissions',
+  })
   async recordDonation(
     @Request() req,
-    @Body() body: {
+    @Body()
+    body: {
       donorUserId: string;
       medicalCenterId: string;
       bloodTypeId: string;
       volumeMl: number;
       notes?: string;
-    }
+    },
   ): Promise<{ message: string; donation: any }> {
     return this.medicalCentersService.recordDonation(
       req.user.id,
@@ -82,7 +105,7 @@ export class MedicalCentersController {
       body.medicalCenterId,
       body.bloodTypeId,
       body.volumeMl,
-      body.notes
+      body.notes,
     );
   }
 
@@ -129,9 +152,13 @@ export class MedicalCentersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create medical center (Admin only)' })
   @ApiResponse({ status: 201, description: 'Medical center created' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async createCenter(
-    @Body() body: {
+    @Body()
+    body: {
       name: string;
       organizationId: string;
       address: string;
@@ -140,7 +167,7 @@ export class MedicalCentersController {
       email?: string;
       locationLat?: number;
       locationLng?: number;
-    }
+    },
   ) {
     return this.medicalCentersService.createCenter(body);
   }
@@ -151,11 +178,15 @@ export class MedicalCentersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update medical center (Admin only)' })
   @ApiResponse({ status: 200, description: 'Medical center updated' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   @ApiResponse({ status: 404, description: 'Medical center not found' })
   async updateCenter(
     @Param('id') id: string,
-    @Body() body: {
+    @Body()
+    body: {
       name?: string;
       address?: string;
       city?: string;
@@ -164,7 +195,7 @@ export class MedicalCentersController {
       locationLat?: number;
       locationLng?: number;
       isActive?: boolean;
-    }
+    },
   ) {
     return this.medicalCentersService.updateCenter(id, body);
   }
@@ -175,7 +206,10 @@ export class MedicalCentersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete medical center (Admin only)' })
   @ApiResponse({ status: 200, description: 'Medical center deleted' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   @ApiResponse({ status: 404, description: 'Medical center not found' })
   async deleteCenter(@Param('id') id: string) {
     return this.medicalCentersService.deleteCenter(id);
@@ -191,4 +225,3 @@ export class MedicalCentersController {
     return this.medicalCentersService.getAllOrganizations();
   }
 }
-

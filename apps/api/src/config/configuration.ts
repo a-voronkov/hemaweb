@@ -56,4 +56,3 @@ export default () => ({
     fromName: process.env.EMAIL_FROM_NAME || 'HemaWeb',
   },
 });
-

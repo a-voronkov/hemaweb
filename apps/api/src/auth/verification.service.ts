@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { randomBytes } from 'crypto';
@@ -64,10 +68,11 @@ export class VerificationService {
    * Verify email with token
    */
   async verifyEmail(token: string) {
-    const verificationToken = await this.prisma.emailVerificationToken.findUnique({
-      where: { token },
-      include: { user: { include: { profile: true } } },
-    });
+    const verificationToken =
+      await this.prisma.emailVerificationToken.findUnique({
+        where: { token },
+        include: { user: { include: { profile: true } } },
+      });
 
     if (!verificationToken) {
       throw new BadRequestException('Invalid verification token');
@@ -162,6 +167,7 @@ export class VerificationService {
     }
 
     // Hash new password
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const bcrypt = require('bcrypt');
     const passwordHash = await bcrypt.hash(newPassword, 10);
 
@@ -181,4 +187,3 @@ export class VerificationService {
     };
   }
 }
-

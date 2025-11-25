@@ -13,4 +13,3 @@ import { AuthModule } from '../auth/auth.module';
   exports: [DonorsService, FavoriteLocationsService],
 })
 export class DonorsModule {}
-

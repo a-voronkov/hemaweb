@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -46,7 +51,11 @@ export class MedicalCentersService {
   /**
    * Search medical centers by location
    */
-  async searchNearby(lat: number, lng: number, radiusKm: number = 10): Promise<{ data: any[] }> {
+  async searchNearby(
+    lat: number,
+    lng: number,
+    radiusKm: number = 10,
+  ): Promise<{ data: any[] }> {
     // Using PostGIS ST_DWithin for radius search
     // Note: This is a simplified version. In production, use proper PostGIS queries
     const centers = await this.prisma.medicalCenter.findMany({
@@ -67,16 +76,16 @@ export class MedicalCentersService {
 
     // Calculate distance and filter
     const nearbyCenters = centers
-      .map(center => {
+      .map((center) => {
         const distance = this.calculateDistance(
           lat,
           lng,
-          center.locationLat!,
-          center.locationLng!
+          center.locationLat,
+          center.locationLng,
         );
         return { ...center, distance };
       })
-      .filter(center => center.distance <= radiusKm)
+      .filter((center) => center.distance <= radiusKm)
       .sort((a, b) => a.distance - b.distance);
 
     return { data: nearbyCenters };
@@ -89,7 +98,7 @@ export class MedicalCentersService {
     staffUserId: string,
     donorUserId: string,
     medicalCenterId: string,
-    notes?: string
+    notes?: string,
   ) {
     // Check if staff has permission
     const staff = await this.prisma.medicalCenterStaff.findUnique({
@@ -98,12 +107,16 @@ export class MedicalCentersService {
     });
 
     if (!staff) {
-      throw new ForbiddenException('Only medical center staff can verify donors');
+      throw new ForbiddenException(
+        'Only medical center staff can verify donors',
+      );
     }
 
     // Check if staff belongs to this center
     if (staff.medicalCenterId !== medicalCenterId) {
-      throw new ForbiddenException('You can only verify donors at your medical center');
+      throw new ForbiddenException(
+        'You can only verify donors at your medical center',
+      );
     }
 
     // Get donor profile
@@ -117,7 +130,9 @@ export class MedicalCentersService {
     }
 
     // Get donor's blood type or use a default
-    const bloodTypeId = donor.bloodTypeId || (await this.prisma.bloodTypeRef.findFirst({ where: { code: 'O+' } }))?.id;
+    const bloodTypeId =
+      donor.bloodTypeId ||
+      (await this.prisma.bloodTypeRef.findFirst({ where: { code: 'O+' } }))?.id;
 
     if (!bloodTypeId) {
       throw new BadRequestException('Blood type not found');
@@ -157,7 +172,7 @@ export class MedicalCentersService {
     medicalCenterId: string,
     bloodTypeId: string,
     volumeMl: number,
-    notes?: string
+    notes?: string,
   ): Promise<{ message: string; donation: any }> {
     // Check if staff has permission
     const staff = await this.prisma.medicalCenterStaff.findUnique({
@@ -165,11 +180,15 @@ export class MedicalCentersService {
     });
 
     if (!staff) {
-      throw new ForbiddenException('Only medical center staff can record donations');
+      throw new ForbiddenException(
+        'Only medical center staff can record donations',
+      );
     }
 
     if (staff.medicalCenterId !== medicalCenterId) {
-      throw new ForbiddenException('You can only record donations at your medical center');
+      throw new ForbiddenException(
+        'You can only record donations at your medical center',
+      );
     }
 
     // Check if donor is verified
@@ -219,7 +238,12 @@ export class MedicalCentersService {
   /**
    * Calculate distance between two points (Haversine formula)
    */
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  private calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
     const R = 6371; // Earth's radius in km
     const dLat = this.toRad(lat2 - lat1);
     const dLon = this.toRad(lon2 - lon1);
@@ -268,7 +292,9 @@ export class MedicalCentersService {
     });
 
     if (!staff || !staff.medicalCenterId) {
-      throw new ForbiddenException('Staff profile not found or not assigned to a center');
+      throw new ForbiddenException(
+        'Staff profile not found or not assigned to a center',
+      );
     }
 
     const verifications = await this.prisma.verificationRecord.findMany({
@@ -286,7 +312,7 @@ export class MedicalCentersService {
     });
 
     // Transform to match expected format
-    const transformed = verifications.map(v => ({
+    const transformed = verifications.map((v) => ({
       ...v,
       user: {
         ...v.profile.user,
@@ -309,7 +335,9 @@ export class MedicalCentersService {
     });
 
     if (!staff || !staff.medicalCenterId) {
-      throw new ForbiddenException('Staff profile not found or not assigned to a center');
+      throw new ForbiddenException(
+        'Staff profile not found or not assigned to a center',
+      );
     }
 
     const donations = await this.prisma.donationRecord.findMany({
@@ -327,7 +355,7 @@ export class MedicalCentersService {
     });
 
     // Transform to match expected format
-    const transformed = donations.map(d => ({
+    const transformed = donations.map((d) => ({
       ...d,
       donatedAt: d.donationDate,
       user: {
@@ -383,7 +411,7 @@ export class MedicalCentersService {
       locationLng?: number;
       workingHours?: any;
       isActive?: boolean;
-    }
+    },
   ) {
     const center = await this.prisma.medicalCenter.findUnique({
       where: { id },
@@ -465,7 +493,9 @@ export class MedicalCentersService {
     }
 
     if (!staff.medicalCenter) {
-      throw new NotFoundException('Medical center not found for this staff member');
+      throw new NotFoundException(
+        'Medical center not found for this staff member',
+      );
     }
 
     const centerId = staff.medicalCenterId;
@@ -554,7 +584,7 @@ export class MedicalCentersService {
           bloodType: bloodType?.name || 'Unknown',
           count: item._count,
         };
-      })
+      }),
     );
 
     return {
@@ -575,4 +605,3 @@ export class MedicalCentersService {
     };
   }
 }
-

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from '../email/email.service';
 import { CreateBloodDriveDto } from './dto/create-blood-drive.dto';
@@ -14,16 +19,23 @@ export class BloodDrivesService {
   /**
    * Get all blood drives
    */
-  async getAllBloodDrives(status?: string, type?: string): Promise<{ data: any[] }> {
+  async getAllBloodDrives(
+    status?: string,
+    type?: string,
+  ): Promise<{ data: any[] }> {
     const where: any = { deletedAt: null };
 
     if (status) {
-      const statusRef = await this.prisma.bloodDriveStatusRef.findUnique({ where: { code: status } });
+      const statusRef = await this.prisma.bloodDriveStatusRef.findUnique({
+        where: { code: status },
+      });
       if (statusRef) where.statusId = statusRef.id;
     }
 
     if (type) {
-      const typeRef = await this.prisma.bloodDriveTypeRef.findUnique({ where: { code: type } });
+      const typeRef = await this.prisma.bloodDriveTypeRef.findUnique({
+        where: { code: type },
+      });
       if (typeRef) where.typeId = typeRef.id;
     }
 
@@ -57,7 +69,12 @@ export class BloodDrivesService {
   /**
    * Get nearby blood drives
    */
-  async getNearbyBloodDrives(lat: number, lng: number, radiusKm: number = 50, bloodType?: string): Promise<{ data: any[] }> {
+  async getNearbyBloodDrives(
+    lat: number,
+    lng: number,
+    radiusKm: number = 50,
+    bloodType?: string,
+  ): Promise<{ data: any[] }> {
     const bloodDrives = await this.prisma.bloodDrive.findMany({
       where: {
         deletedAt: null,
@@ -77,22 +94,22 @@ export class BloodDrivesService {
 
     // Calculate distance and filter
     const nearbyDrives = bloodDrives
-      .map(drive => {
+      .map((drive) => {
         const distance = this.calculateDistance(
           lat,
           lng,
-          drive.medicalCenter.locationLat!,
-          drive.medicalCenter.locationLng!
+          drive.medicalCenter.locationLat,
+          drive.medicalCenter.locationLng,
         );
         return { ...drive, distance };
       })
-      .filter(drive => drive.distance <= radiusKm);
+      .filter((drive) => drive.distance <= radiusKm);
 
     // Filter by blood type if specified
     let filtered = nearbyDrives;
     if (bloodType) {
-      filtered = nearbyDrives.filter(drive =>
-        drive.bloodTypesNeeded.some(bt => bt.bloodType.code === bloodType)
+      filtered = nearbyDrives.filter((drive) =>
+        drive.bloodTypesNeeded.some((bt) => bt.bloodType.code === bloodType),
       );
     }
 
@@ -146,7 +163,10 @@ export class BloodDrivesService {
   /**
    * Create blood drive
    */
-  async createBloodDrive(userId: string, dto: CreateBloodDriveDto): Promise<{ message: string; data: any }> {
+  async createBloodDrive(
+    userId: string,
+    dto: CreateBloodDriveDto,
+  ): Promise<{ message: string; data: any }> {
     // Determine medical center ID
     let medicalCenterId = dto.medicalCenterId;
 
@@ -157,15 +177,21 @@ export class BloodDrivesService {
       });
 
       if (!staff?.medicalCenterId) {
-        throw new ForbiddenException('Only medical center staff can create blood drives');
+        throw new ForbiddenException(
+          'Only medical center staff can create blood drives',
+        );
       }
 
       medicalCenterId = staff.medicalCenterId;
     }
 
     // Get type and status
-    const type = await this.prisma.bloodDriveTypeRef.findUnique({ where: { code: dto.typeCode } });
-    const status = await this.prisma.bloodDriveStatusRef.findUnique({ where: { code: 'upcoming' } });
+    const type = await this.prisma.bloodDriveTypeRef.findUnique({
+      where: { code: dto.typeCode },
+    });
+    const status = await this.prisma.bloodDriveStatusRef.findUnique({
+      where: { code: 'upcoming' },
+    });
 
     if (!type || !status) {
       throw new BadRequestException('Invalid blood drive type or status');
@@ -177,7 +203,7 @@ export class BloodDrivesService {
       const bloodTypes = await this.prisma.bloodTypeRef.findMany({
         where: { code: { in: dto.bloodTypesNeeded } },
       });
-      bloodTypeIds.push(...bloodTypes.map(bt => bt.id));
+      bloodTypeIds.push(...bloodTypes.map((bt) => bt.id));
     }
 
     // Create blood drive
@@ -196,7 +222,7 @@ export class BloodDrivesService {
         targetDonors: dto.targetDonors,
         radiusKm: dto.radiusKm || 10,
         bloodTypesNeeded: {
-          create: bloodTypeIds.map(btId => ({
+          create: bloodTypeIds.map((btId) => ({
             bloodTypeId: btId,
           })),
         },
@@ -222,7 +248,12 @@ export class BloodDrivesService {
   /**
    * Calculate distance between two points (Haversine formula)
    */
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  private calculateDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number,
+  ): number {
     const R = 6371; // Earth's radius in km
     const dLat = this.toRad(lat2 - lat1);
     const dLon = this.toRad(lon2 - lon1);
@@ -243,7 +274,11 @@ export class BloodDrivesService {
   /**
    * Update blood drive
    */
-  async updateBloodDrive(userId: string, id: string, dto: UpdateBloodDriveDto): Promise<{ message: string; data: any }> {
+  async updateBloodDrive(
+    userId: string,
+    id: string,
+    dto: UpdateBloodDriveDto,
+  ): Promise<{ message: string; data: any }> {
     const bloodDrive = await this.prisma.bloodDrive.findUnique({
       where: { id },
       include: { medicalCenter: true },
@@ -259,19 +294,24 @@ export class BloodDrivesService {
     });
 
     if (!staff || staff.medicalCenterId !== bloodDrive.medicalCenterId) {
-      throw new ForbiddenException('You can only update blood drives at your medical center');
+      throw new ForbiddenException(
+        'You can only update blood drives at your medical center',
+      );
     }
 
     const updateData: any = {};
 
     if (dto.title) updateData.title = dto.title;
     if (dto.description) updateData.description = dto.description;
-    if (dto.startDateTime) updateData.startDateTime = new Date(dto.startDateTime);
+    if (dto.startDateTime)
+      updateData.startDateTime = new Date(dto.startDateTime);
     if (dto.endDateTime) updateData.endDateTime = new Date(dto.endDateTime);
     if (dto.targetDonors) updateData.targetDonors = dto.targetDonors;
 
     if (dto.statusCode) {
-      const status = await this.prisma.bloodDriveStatusRef.findUnique({ where: { code: dto.statusCode } });
+      const status = await this.prisma.bloodDriveStatusRef.findUnique({
+        where: { code: dto.statusCode },
+      });
       if (status) updateData.statusId = status.id;
     }
 
@@ -314,7 +354,9 @@ export class BloodDrivesService {
     });
 
     if (!staff || staff.medicalCenterId !== bloodDrive.medicalCenterId) {
-      throw new ForbiddenException('You can only delete blood drives at your medical center');
+      throw new ForbiddenException(
+        'You can only delete blood drives at your medical center',
+      );
     }
 
     await this.prisma.bloodDrive.update({
@@ -366,7 +408,9 @@ export class BloodDrivesService {
     }
 
     if (!profile.isDonorVerified) {
-      throw new BadRequestException('You must be verified before registering for blood drives');
+      throw new BadRequestException(
+        'You must be verified before registering for blood drives',
+      );
     }
 
     // Get blood drive details
@@ -390,7 +434,9 @@ export class BloodDrivesService {
     });
 
     if (existing) {
-      throw new BadRequestException('You are already registered for this blood drive');
+      throw new BadRequestException(
+        'You are already registered for this blood drive',
+      );
     }
 
     // Create registration
@@ -518,7 +564,7 @@ export class BloodDrivesService {
     });
 
     return {
-      data: bloodDrives.map(drive => ({
+      data: bloodDrives.map((drive) => ({
         id: drive.id,
         name: drive.title,
         description: drive.description,
@@ -526,7 +572,9 @@ export class BloodDrivesService {
         startDate: drive.startDateTime,
         endDate: drive.endDateTime,
         startTime: drive.startDateTime.toTimeString().slice(0, 5),
-        endTime: drive.endDateTime ? drive.endDateTime.toTimeString().slice(0, 5) : undefined,
+        endTime: drive.endDateTime
+          ? drive.endDateTime.toTimeString().slice(0, 5)
+          : undefined,
         maxDonors: drive.targetDonors,
         medicalCenter: drive.medicalCenter,
         _count: {
@@ -552,7 +600,7 @@ export class BloodDrivesService {
     userId: string,
     bloodDriveId: string,
     appointmentDate: string,
-    appointmentTime: string
+    appointmentTime: string,
   ) {
     // Get donor profile
     const profile = await this.prisma.profile.findUnique({
@@ -581,17 +629,21 @@ export class BloodDrivesService {
     }
 
     // Check if drive is full
-    if (bloodDrive.targetDonors && bloodDrive._count.registrations >= bloodDrive.targetDonors) {
+    if (
+      bloodDrive.targetDonors &&
+      bloodDrive._count.registrations >= bloodDrive.targetDonors
+    ) {
       throw new BadRequestException('Blood drive is full');
     }
 
     // Check if already registered
-    const existingRegistration = await this.prisma.bloodDriveRegistration.findFirst({
-      where: {
-        bloodDriveId,
-        profileId: profile.id,
-      },
-    });
+    const existingRegistration =
+      await this.prisma.bloodDriveRegistration.findFirst({
+        where: {
+          bloodDriveId,
+          profileId: profile.id,
+        },
+      });
 
     if (existingRegistration) {
       throw new BadRequestException('Already registered for this blood drive');
@@ -599,14 +651,16 @@ export class BloodDrivesService {
 
     // Check if time slot is available (max 1 donor per hour)
     const appointmentDateTime = new Date(appointmentDate);
-    const existingAppointments = await this.prisma.bloodDriveRegistration.count({
-      where: {
-        bloodDriveId,
-        appointmentDate: appointmentDateTime,
-        appointmentTime,
-        status: { not: 'cancelled' },
+    const existingAppointments = await this.prisma.bloodDriveRegistration.count(
+      {
+        where: {
+          bloodDriveId,
+          appointmentDate: appointmentDateTime,
+          appointmentTime,
+          status: { not: 'cancelled' },
+        },
       },
-    });
+    );
 
     if (existingAppointments >= 1) {
       throw new BadRequestException('This time slot is already booked');
@@ -680,7 +734,7 @@ export class BloodDrivesService {
     });
 
     return {
-      data: appointments.map(apt => ({
+      data: appointments.map((apt) => ({
         id: apt.id,
         confirmationNumber: apt.confirmationNumber,
         appointmentDate: apt.appointmentDate,
@@ -774,4 +828,3 @@ export class BloodDrivesService {
     };
   }
 }
-

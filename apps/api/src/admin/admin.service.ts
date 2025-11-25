@@ -21,22 +21,22 @@ export class AdminService {
     ] = await Promise.all([
       // Total donors
       this.prisma.profile.count(),
-      
+
       // Verified donors
       this.prisma.profile.count({
         where: { isDonorVerified: true },
       }),
-      
+
       // Total donations
       this.prisma.donationRecord.count({
         where: { deletedAt: null },
       }),
-      
+
       // Total blood drives
       this.prisma.bloodDrive.count({
         where: { deletedAt: null },
       }),
-      
+
       // Upcoming blood drives
       this.prisma.bloodDrive.count({
         where: {
@@ -44,7 +44,7 @@ export class AdminService {
           status: { code: 'upcoming' },
         },
       }),
-      
+
       // Active blood drives
       this.prisma.bloodDrive.count({
         where: {
@@ -52,12 +52,12 @@ export class AdminService {
           status: { code: 'active' },
         },
       }),
-      
+
       // Total medical centers
       this.prisma.medicalCenter.count({
         where: { deletedAt: null },
       }),
-      
+
       // Total staff
       this.prisma.medicalCenterStaff.count(),
     ]);
@@ -65,7 +65,7 @@ export class AdminService {
     // Get recent donations (last 30 days)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     const recentDonations = await this.prisma.donationRecord.count({
       where: {
         deletedAt: null,
@@ -93,14 +93,16 @@ export class AdminService {
           bloodType: bloodType?.name || 'Unknown',
           count: item._count,
         };
-      })
+      }),
     );
 
     // Get donation volume by month (last 6 months)
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-    const donationsByMonth = await this.prisma.$queryRaw<Array<{ month: string; count: bigint; volume: bigint }>>`
+    const donationsByMonth = await this.prisma.$queryRaw<
+      Array<{ month: string; count: bigint; volume: bigint }>
+    >`
       SELECT
         TO_CHAR("donationDate", 'YYYY-MM') as month,
         COUNT(*) as count,
@@ -125,7 +127,7 @@ export class AdminService {
         totalStaff,
       },
       bloodTypeDistribution: bloodTypeStats,
-      donationsByMonth: donationsByMonth.map(row => ({
+      donationsByMonth: donationsByMonth.map((row) => ({
         month: row.month,
         count: Number(row.count),
         volume: Number(row.volume),
@@ -248,7 +250,7 @@ export class AdminService {
       take: limit,
     });
 
-    return recentDonations.map(donation => ({
+    return recentDonations.map((donation) => ({
       id: donation.id,
       type: 'donation',
       date: donation.donationDate,
@@ -262,4 +264,3 @@ export class AdminService {
     }));
   }
 }
-

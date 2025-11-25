@@ -1,5 +1,22 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { BloodDrivesService } from './blood-drives.service';
 import { CreateBloodDriveDto } from './dto/create-blood-drive.dto';
 import { UpdateBloodDriveDto } from './dto/update-blood-drive.dto';
@@ -15,7 +32,11 @@ export class BloodDrivesController {
 
   @Get()
   @ApiOperation({ summary: 'Get all blood drives' })
-  @ApiQuery({ name: 'status', required: false, description: 'Filter by status' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    description: 'Filter by status',
+  })
   @ApiQuery({ name: 'type', required: false, description: 'Filter by type' })
   @ApiResponse({ status: 200, description: 'Blood drives retrieved' })
   async getAllBloodDrives(
@@ -36,8 +57,16 @@ export class BloodDrivesController {
   @ApiOperation({ summary: 'Get nearby blood drives' })
   @ApiQuery({ name: 'lat', required: true, description: 'Latitude' })
   @ApiQuery({ name: 'lng', required: true, description: 'Longitude' })
-  @ApiQuery({ name: 'radius', required: false, description: 'Radius in km (default: 50)' })
-  @ApiQuery({ name: 'bloodType', required: false, description: 'Filter by blood type' })
+  @ApiQuery({
+    name: 'radius',
+    required: false,
+    description: 'Radius in km (default: 50)',
+  })
+  @ApiQuery({
+    name: 'bloodType',
+    required: false,
+    description: 'Filter by blood type',
+  })
   @ApiResponse({ status: 200, description: 'Nearby blood drives retrieved' })
   async getNearbyBloodDrives(
     @Query('lat') lat: string,
@@ -72,7 +101,10 @@ export class BloodDrivesController {
     @Request() req,
     @Body() createBloodDriveDto: CreateBloodDriveDto,
   ): Promise<{ message: string; data: any }> {
-    return this.bloodDrivesService.createBloodDrive(req.user.id, createBloodDriveDto);
+    return this.bloodDrivesService.createBloodDrive(
+      req.user.id,
+      createBloodDriveDto,
+    );
   }
 
   @Put(':id')
@@ -88,7 +120,11 @@ export class BloodDrivesController {
     @Param('id') id: string,
     @Body() updateBloodDriveDto: UpdateBloodDriveDto,
   ): Promise<{ message: string; data: any }> {
-    return this.bloodDrivesService.updateBloodDrive(req.user.id, id, updateBloodDriveDto);
+    return this.bloodDrivesService.updateBloodDrive(
+      req.user.id,
+      id,
+      updateBloodDriveDto,
+    );
   }
 
   @Delete(':id')
@@ -99,10 +135,7 @@ export class BloodDrivesController {
   @ApiResponse({ status: 200, description: 'Blood drive deleted' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 404, description: 'Blood drive not found' })
-  async deleteBloodDrive(
-    @Request() req,
-    @Param('id') id: string,
-  ) {
+  async deleteBloodDrive(@Request() req, @Param('id') id: string) {
     return this.bloodDrivesService.deleteBloodDrive(req.user.id, id);
   }
 
@@ -118,11 +151,11 @@ export class BloodDrivesController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Register for blood drive (donors only)' })
   @ApiResponse({ status: 200, description: 'Registered successfully' })
-  @ApiResponse({ status: 400, description: 'Already registered or not eligible' })
-  async registerForBloodDrive(
-    @Request() req,
-    @Param('id') id: string,
-  ) {
+  @ApiResponse({
+    status: 400,
+    description: 'Already registered or not eligible',
+  })
+  async registerForBloodDrive(@Request() req, @Param('id') id: string) {
     return this.bloodDrivesService.registerForBloodDrive(req.user.id, id);
   }
 
@@ -131,10 +164,7 @@ export class BloodDrivesController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Cancel blood drive registration' })
   @ApiResponse({ status: 200, description: 'Registration cancelled' })
-  async cancelRegistration(
-    @Request() req,
-    @Param('id') id: string,
-  ) {
+  async cancelRegistration(@Request() req, @Param('id') id: string) {
     return this.bloodDrivesService.cancelRegistration(req.user.id, id);
   }
 
@@ -155,15 +185,12 @@ export class BloodDrivesController {
   @ApiOperation({ summary: 'Book appointment for blood drive (Donor only)' })
   @ApiResponse({ status: 201, description: 'Appointment booked' })
   @ApiResponse({ status: 400, description: 'Not eligible or drive is full' })
-  async bookAppointment(
-    @Request() req,
-    @Body() body: CreateAppointmentDto,
-  ) {
+  async bookAppointment(@Request() req, @Body() body: CreateAppointmentDto) {
     return this.bloodDrivesService.bookAppointment(
       req.user.id,
       body.bloodDriveId,
       body.appointmentDate,
-      body.appointmentTime
+      body.appointmentTime,
     );
   }
 
@@ -197,4 +224,3 @@ export class BloodDrivesController {
     return this.bloodDrivesService.archiveBloodDrive(id);
   }
 }
-

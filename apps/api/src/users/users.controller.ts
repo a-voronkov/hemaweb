@@ -6,9 +6,14 @@ import {
   Param,
   Query,
   UseGuards,
-  Req,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { Request } from 'express';
 import { UsersService } from './users.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -70,13 +75,13 @@ export class UsersController {
 
   @Put('me/staff-profile')
   @ApiOperation({ summary: 'Update current staff/admin profile' })
-  @ApiResponse({ status: 200, description: 'Staff profile updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Staff profile updated successfully',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
-  async updateMyStaffProfile(
-    @CurrentUser() user: any,
-    @Body() updateDto: any,
-  ) {
+  async updateMyStaffProfile(@CurrentUser() user: any, @Body() updateDto: any) {
     const updatedProfile = await this.usersService.updateStaffProfile(
       user.id,
       updateDto,
@@ -94,11 +99,24 @@ export class UsersController {
   @ApiOperation({ summary: 'Search users (staff/admin)' })
   @ApiQuery({ name: 'email', required: false, description: 'Email to search' })
   @ApiQuery({ name: 'q', required: false, description: 'Search query' })
-  @ApiQuery({ name: 'page', required: false, description: 'Page number', example: 1 })
-  @ApiQuery({ name: 'limit', required: false, description: 'Items per page', example: 10 })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Items per page',
+    example: 10,
+  })
   @ApiResponse({ status: 200, description: 'Users found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Staff access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Staff access required',
+  })
   async searchUsers(
     @Query('email') email: string,
     @Query('q') query: string,
@@ -110,7 +128,10 @@ export class UsersController {
   }> {
     const searchQuery = email || query;
     if (!searchQuery) {
-      return { data: [], meta: { total: 0, page: 1, limit: 10, totalPages: 0 } };
+      return {
+        data: [],
+        meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
+      };
     }
 
     return this.usersService.searchUsers(
@@ -134,14 +155,27 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Profile found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async getUserProfileById(@Param('id') userId: string, @CurrentUser() user: any) {
+  async getUserProfileById(
+    @Param('id') userId: string,
+    @CurrentUser() user: any,
+  ) {
     return this.usersService.getUserById(userId, user.id);
   }
 
   @Get('me/donations')
   @ApiOperation({ summary: 'Get my donation history' })
-  @ApiQuery({ name: 'page', required: false, description: 'Page number', example: 1 })
-  @ApiQuery({ name: 'limit', required: false, description: 'Items per page', example: 20 })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Items per page',
+    example: 20,
+  })
   @ApiResponse({ status: 200, description: 'Donation history retrieved' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getMyDonationHistory(
@@ -164,4 +198,3 @@ export class UsersController {
     return this.usersService.getEligibilityStatus(user.id);
   }
 }
-

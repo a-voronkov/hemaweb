@@ -49,4 +49,3 @@ export class ReferenceController {
     return this.referenceService.getNotificationTypes();
   }
 }
-

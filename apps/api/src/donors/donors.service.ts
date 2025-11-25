@@ -52,26 +52,27 @@ export class DonorsService {
     }
 
     // Get upcoming registrations
-    const upcomingRegistrations = await this.prisma.bloodDriveRegistration.findMany({
-      where: {
-        profileId: profile.id,
-        status: 'registered',
-        bloodDrive: {
-          startDateTime: {
-            gte: new Date(),
+    const upcomingRegistrations =
+      await this.prisma.bloodDriveRegistration.findMany({
+        where: {
+          profileId: profile.id,
+          status: 'registered',
+          bloodDrive: {
+            startDateTime: {
+              gte: new Date(),
+            },
           },
         },
-      },
-      include: {
-        bloodDrive: {
-          include: {
-            medicalCenter: true,
+        include: {
+          bloodDrive: {
+            include: {
+              medicalCenter: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-    });
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      });
 
     return {
       totalDonations,
@@ -79,7 +80,7 @@ export class DonorsService {
       nextEligibleDate,
       bloodType: profile.bloodType?.name,
       isDonorVerified: profile.isDonorVerified,
-      upcomingAppointments: upcomingRegistrations.map(reg => ({
+      upcomingAppointments: upcomingRegistrations.map((reg) => ({
         id: reg.id,
         date: reg.bloodDrive.startDateTime,
         bloodDrive: {
@@ -87,7 +88,7 @@ export class DonorsService {
           location: reg.bloodDrive.address || reg.bloodDrive.city || '',
         },
       })),
-      recentDonations: profile.donationRecords.map(donation => ({
+      recentDonations: profile.donationRecords.map((donation) => ({
         id: donation.id,
         donationDate: donation.donationDate,
         bloodType: donation.bloodType.name,
@@ -124,7 +125,7 @@ export class DonorsService {
     });
 
     return {
-      data: donations.map(donation => ({
+      data: donations.map((donation) => ({
         id: donation.id,
         donationDate: donation.donationDate,
         bloodType: donation.bloodType.name,
@@ -238,4 +239,3 @@ export class DonorsService {
     };
   }
 }
-
