@@ -2,7 +2,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
-import * as Mailjet from 'node-mailjet';
+
+// Use require for Mailjet to avoid TypeScript import issues
+const Mailjet = require('node-mailjet');
 
 @Injectable()
 export class EmailService {
