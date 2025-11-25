@@ -94,12 +94,17 @@ export class BloodDrivesService {
 
     // Calculate distance and filter
     const nearbyDrives = bloodDrives
+      .filter(
+        (drive) =>
+          drive.medicalCenter.locationLat !== null &&
+          drive.medicalCenter.locationLng !== null,
+      )
       .map((drive) => {
         const distance = this.calculateDistance(
           lat,
           lng,
-          drive.medicalCenter.locationLat,
-          drive.medicalCenter.locationLng,
+          drive.medicalCenter.locationLat!,
+          drive.medicalCenter.locationLng!,
         );
         return { ...drive, distance };
       })

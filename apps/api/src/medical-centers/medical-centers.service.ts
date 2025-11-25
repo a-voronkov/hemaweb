@@ -76,12 +76,15 @@ export class MedicalCentersService {
 
     // Calculate distance and filter
     const nearbyCenters = centers
+      .filter(
+        (center) => center.locationLat !== null && center.locationLng !== null,
+      )
       .map((center) => {
         const distance = this.calculateDistance(
           lat,
           lng,
-          center.locationLat,
-          center.locationLng,
+          center.locationLat!,
+          center.locationLng!,
         );
         return { ...center, distance };
       })

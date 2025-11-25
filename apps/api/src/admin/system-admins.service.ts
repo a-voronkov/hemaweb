@@ -33,7 +33,7 @@ export class SystemAdminsService {
         isActive: true,
         isVerified: true,
         createdAt: true,
-        staff: {
+        systemAdmin: {
           select: {
             id: true,
             firstName: true,
@@ -127,20 +127,20 @@ export class SystemAdminsService {
     const user = await this.prisma.user.findUnique({
       where: { id, deletedAt: null },
       include: {
-        staff: true,
+        systemAdmin: true,
       },
     });
 
-    if (!user || !user.staff) {
+    if (!user || !user.systemAdmin) {
       throw new NotFoundException('System admin not found');
     }
 
     // Update in transaction
     await this.prisma.$transaction(async (tx) => {
-      // Update staff profile
+      // Update system admin profile
       if (data.firstName !== undefined || data.lastName !== undefined) {
-        await tx.medicalCenterStaff.update({
-          where: { id: user.staff.id },
+        await tx.systemAdmin.update({
+          where: { id: user.systemAdmin.id },
           data: {
             firstName: data.firstName,
             lastName: data.lastName,
