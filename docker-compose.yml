@@ -49,6 +49,11 @@ services:
       REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://hemaweb.world}
       FRONTEND_URL: ${FRONTEND_URL:-https://hemaweb.world}
+      # Email - Mailjet API
+      MAILJET_API_KEY: ${MAILJET_API_KEY}
+      MAILJET_SECRET_KEY: ${MAILJET_SECRET_KEY}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@hemaweb.world}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-HemaWeb}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.api.rule=(Host(`hemaweb.world`) || Host(`www.hemaweb.world`)) && PathPrefix(`/api`)"
