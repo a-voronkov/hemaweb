@@ -134,6 +134,34 @@ export class AuthService {
   }
 
   /**
+   * Get user with role information
+   */
+  async getUserWithRole(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        role: true,
+        profile: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const { passwordHash, ...userWithoutPassword } = user;
+
+    return {
+      ...userWithoutPassword,
+      role: {
+        id: user.role.id,
+        code: user.role.code,
+        name: user.role.name,
+      },
+    };
+  }
+
+  /**
    * Get session cookie
    */
   createSessionCookie(sessionId: string) {

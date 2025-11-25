@@ -32,5 +32,14 @@ export class AdminController {
   async getRecentActivity(@Query('limit') limit: string = '20') {
     return this.adminService.getRecentActivity(parseInt(limit, 10));
   }
+
+  @Get('dashboard/global-stats')
+  @Roles('system_admin')
+  @ApiOperation({ summary: 'Get global statistics (System Admin only)' })
+  @ApiResponse({ status: 200, description: 'Global statistics retrieved' })
+  @ApiResponse({ status: 403, description: 'Forbidden - System Admin access required' })
+  async getGlobalStats() {
+    return this.adminService.getGlobalStats();
+  }
 }
 

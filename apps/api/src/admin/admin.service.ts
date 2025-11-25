@@ -101,14 +101,14 @@ export class AdminService {
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
     const donationsByMonth = await this.prisma.$queryRaw<Array<{ month: string; count: bigint; volume: bigint }>>`
-      SELECT 
-        TO_CHAR(donation_date, 'YYYY-MM') as month,
+      SELECT
+        TO_CHAR("donationDate", 'YYYY-MM') as month,
         COUNT(*) as count,
-        SUM(volume_ml) as volume
+        SUM("volumeMl") as volume
       FROM donation_records
-      WHERE donation_date >= ${sixMonthsAgo}
-        AND deleted_at IS NULL
-      GROUP BY TO_CHAR(donation_date, 'YYYY-MM')
+      WHERE "donationDate" >= ${sixMonthsAgo}
+        AND "deletedAt" IS NULL
+      GROUP BY TO_CHAR("donationDate", 'YYYY-MM')
       ORDER BY month DESC
     `;
 
@@ -130,6 +130,100 @@ export class AdminService {
         count: Number(row.count),
         volume: Number(row.volume),
       })),
+    };
+  }
+
+  /**
+   * Get global statistics for System Admin
+   */
+  async getGlobalStats() {
+    const [
+      totalOrganizations,
+      activeOrganizations,
+      totalMedicalCenters,
+      activeMedicalCenters,
+      totalStaff,
+      activeStaff,
+      totalDonors,
+      verifiedDonors,
+      totalDonations,
+      totalBloodDrives,
+    ] = await Promise.all([
+      // Organizations
+      this.prisma.medicalOrganization.count({
+        where: { deletedAt: null },
+      }),
+      this.prisma.medicalOrganization.count({
+        where: { deletedAt: null, isActive: true },
+      }),
+
+      // Medical Centers
+      this.prisma.medicalCenter.count({
+        where: { deletedAt: null },
+      }),
+      this.prisma.medicalCenter.count({
+        where: { deletedAt: null, isActive: true },
+      }),
+
+      // Staff
+      this.prisma.medicalCenterStaff.count(),
+      this.prisma.medicalCenterStaff.count({
+        where: {
+          user: { isActive: true },
+        },
+      }),
+
+      // Donors
+      this.prisma.profile.count(),
+      this.prisma.profile.count({
+        where: { isDonorVerified: true },
+      }),
+
+      // Donations
+      this.prisma.donationRecord.count({
+        where: { deletedAt: null },
+      }),
+
+      // Blood Drives
+      this.prisma.bloodDrive.count({
+        where: { deletedAt: null },
+      }),
+    ]);
+
+    // Get organizations with stats
+    const organizations = await this.prisma.medicalOrganization.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        isActive: true,
+        _count: {
+          select: {
+            medicalCenters: {
+              where: { deletedAt: null },
+            },
+            staff: true,
+          },
+        },
+      },
+      orderBy: { name: 'asc' },
+      take: 10,
+    });
+
+    return {
+      overview: {
+        totalOrganizations,
+        activeOrganizations,
+        totalMedicalCenters,
+        activeMedicalCenters,
+        totalStaff,
+        activeStaff,
+        totalDonors,
+        verifiedDonors,
+        totalDonations,
+        totalBloodDrives,
+      },
+      topOrganizations: organizations,
     };
   }
 

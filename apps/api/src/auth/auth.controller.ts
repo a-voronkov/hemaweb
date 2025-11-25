@@ -122,10 +122,15 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Session is valid' })
   @ApiResponse({ status: 401, description: 'Session is invalid' })
   async validateSession(@Req() request: Request) {
+    const luciaUser = request['user'];
+
+    // Get full user with role
+    const fullUser = await this.authService.getUserWithRole(luciaUser.id);
+
     return {
       valid: true,
       session: request['session'],
-      user: request['user'],
+      user: fullUser,
     };
   }
 
