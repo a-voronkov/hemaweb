@@ -169,7 +169,8 @@ export default function FavoriteLocationsPage() {
               <DialogHeader>
                 <DialogTitle>Add Favorite Location</DialogTitle>
                 <DialogDescription>
-                  Click on the map to select your location, then set a search radius for finding nearby blood drives.
+                  Click on the map to select your location, then set a search radius for finding
+                  nearby blood drives.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-6 py-4">
@@ -185,7 +186,9 @@ export default function FavoriteLocationsPage() {
                     id="locationName"
                     placeholder="e.g., Home, Work, University"
                     value={newLocationData.name}
-                    onChange={(e) => setNewLocationData({ ...newLocationData, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewLocationData({ ...newLocationData, name: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -195,7 +198,6 @@ export default function FavoriteLocationsPage() {
                   <LocationPicker
                     lat={newLocationData.latitude ?? undefined}
                     lng={newLocationData.longitude ?? undefined}
-                    radiusKm={newLocationData.radiusKm}
                     onLocationChange={(lat, lng) => {
                       setNewLocationData({ ...newLocationData, latitude: lat, longitude: lng });
                       setError('');
@@ -203,7 +205,7 @@ export default function FavoriteLocationsPage() {
                     height="300px"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Click on the map to select your location. The green circle shows the search radius.
+                    Click on the map to select your location.
                   </p>
                 </div>
 
@@ -220,7 +222,9 @@ export default function FavoriteLocationsPage() {
                     max={50}
                     step={1}
                     value={[newLocationData.radiusKm]}
-                    onValueChange={(value) => setNewLocationData({ ...newLocationData, radiusKm: value[0] })}
+                    onValueChange={(value) =>
+                      setNewLocationData({ ...newLocationData, radiusKm: value[0] })
+                    }
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">
@@ -257,8 +261,9 @@ export default function FavoriteLocationsPage() {
               <div className="text-sm">
                 <p className="font-medium text-blue-900">Privacy Notice</p>
                 <p className="text-blue-800 mt-1">
-                  We do not store your exact address. Only approximate coordinates are saved to help you find nearby blood drives
-                  and receive notifications when there&#039;s an urgent need for your blood type in your area.
+                  We do not store your exact address. Only approximate coordinates are saved to help
+                  you find nearby blood drives and receive notifications when there&#039;s an urgent
+                  need for your blood type in your area.
                 </p>
               </div>
             </div>
@@ -342,4 +347,3 @@ export default function FavoriteLocationsPage() {
     </MainLayout>
   );
 }
-
