@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  UnauthorizedException,
-  ConflictException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -24,80 +19,9 @@ export class AuthService {
   }
 
   /**
-   * Transform Prisma Profile to simplified DTO format
-   */
-  private transformProfile(profile: {
-    id: string;
-    userId: string;
-    firstName: string;
-    lastName: string;
-    phone: string | null;
-    dateOfBirth: Date | null;
-    address: string | null;
-    lastDonationDate: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-    bloodType?: { code: string } | null;
-  }): {
-    id: string;
-    userId: string;
-    firstName: string;
-    lastName: string;
-    phone: string | null;
-    dateOfBirth: Date | null;
-    address: string | null;
-    bloodType: string | null;
-    lastDonationDate: Date | null;
-    emergencyContact: string | null;
-    medicalNotes: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-  } {
-    return {
-      id: profile.id,
-      userId: profile.userId,
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      phone: profile.phone,
-      dateOfBirth: profile.dateOfBirth,
-      address: profile.address,
-      bloodType: profile.bloodType?.code ?? null,
-      lastDonationDate: profile.lastDonationDate,
-      emergencyContact: null, // Not in current schema
-      medicalNotes: null, // Not in current schema
-      createdAt: profile.createdAt,
-      updatedAt: profile.updatedAt,
-    };
-  }
-
-  /**
    * Register a new user (donor)
    */
-  async register(
-    email: string,
-    password: string,
-    firstName: string,
-    lastName: string,
-    phone: string,
-  ): Promise<{
-    id: string;
-    email: string;
-    profile: {
-      id: string;
-      userId: string;
-      firstName: string;
-      lastName: string;
-      phone: string | null;
-      dateOfBirth: Date | null;
-      address: string | null;
-      bloodType: string | null;
-      lastDonationDate: Date | null;
-      emergencyContact: string | null;
-      medicalNotes: string | null;
-      createdAt: Date;
-      updatedAt: Date;
-    } | null;
-  }> {
+  async register(email: string, password: string, firstName: string, lastName: string, phone: string) {
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email },
@@ -136,17 +60,13 @@ export class AuthService {
         },
       },
       include: {
-        profile: {
-          include: {
-            bloodType: true,
-          },
-        },
+        profile: true,
       },
     });
 
     // Send verification email
     try {
-      await this.verificationService.sendVerificationEmail(user.id as string);
+      await this.verificationService.sendVerificationEmail(user.id);
     } catch (error) {
       // Log error but don't fail registration
       console.error('Failed to send verification email:', error);
@@ -155,21 +75,14 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
-      profile: user.profile
-        ? this.transformProfile(
-            user.profile as Parameters<typeof this.transformProfile>[0],
-          )
-        : null,
+      profile: user.profile,
     };
   }
 
   /**
    * Login user
    */
-  async login(
-    email: string,
-    password: string,
-  ): Promise<{ user: User; session: Session }> {
+  async login(email: string, password: string): Promise<{ user: User; session: Session }> {
     // Find user
     const user = await this.prisma.user.findUnique({
       where: { email },
@@ -185,17 +98,14 @@ export class AuthService {
     }
 
     // Verify password
-    const validPassword = await bcrypt.compare(
-      password,
-      user.passwordHash as string,
-    );
+    const validPassword = await bcrypt.compare(password, user.passwordHash);
     if (!validPassword) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
     // Create session
-    const session = await this.lucia.createSession(user.id as string, {});
-
+    const session = await this.lucia.createSession(user.id, {});
+    
     return {
       user: {
         id: user.id,
@@ -226,44 +136,12 @@ export class AuthService {
   /**
    * Get user with role information
    */
-  async getUserWithRole(userId: string): Promise<{
-    id: string;
-    email: string;
-    roleId: string;
-    isActive: boolean;
-    isVerified: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    role: {
-      id: string;
-      code: string;
-      name: string;
-    };
-    profile: {
-      id: string;
-      userId: string;
-      firstName: string;
-      lastName: string;
-      phone: string | null;
-      dateOfBirth: Date | null;
-      address: string | null;
-      bloodType: string | null;
-      lastDonationDate: Date | null;
-      emergencyContact: string | null;
-      medicalNotes: string | null;
-      createdAt: Date;
-      updatedAt: Date;
-    } | null;
-  }> {
+  async getUserWithRole(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
         role: true,
-        profile: {
-          include: {
-            bloodType: true,
-          },
-        },
+        profile: true,
       },
     });
 
@@ -271,7 +149,6 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...userWithoutPassword } = user;
 
     return {
@@ -281,11 +158,6 @@ export class AuthService {
         code: user.role.code,
         name: user.role.name,
       },
-      profile: user.profile
-        ? this.transformProfile(
-            user.profile as Parameters<typeof this.transformProfile>[0],
-          )
-        : null,
     };
   }
 
@@ -306,11 +178,7 @@ export class AuthService {
   /**
    * Change user password
    */
-  async changePassword(
-    userId: string,
-    currentPassword: string,
-    newPassword: string,
-  ) {
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
     // Get user
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -321,19 +189,14 @@ export class AuthService {
     }
 
     // Verify current password
-    const isPasswordValid = await bcrypt.compare(
-      currentPassword,
-      user.passwordHash as string,
-    );
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
     // Validate new password
     if (newPassword.length < 8) {
-      throw new BadRequestException(
-        'Password must be at least 8 characters long',
-      );
+      throw new BadRequestException('Password must be at least 8 characters long');
     }
 
     // Hash new password
@@ -367,10 +230,7 @@ export class AuthService {
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      user.passwordHash as string,
-    );
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Password is incorrect');
     }
@@ -397,8 +257,8 @@ export class AuthService {
     // await this.verificationService.sendVerificationEmail(newEmail);
 
     return {
-      message:
-        'Email changed successfully. Please verify your new email address.',
+      message: 'Email changed successfully. Please verify your new email address.',
     };
   }
 }
+

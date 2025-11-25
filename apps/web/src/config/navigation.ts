@@ -21,33 +21,23 @@ export const navigationConfig: Record<string, RoleNavigation> = {
     primary: [
       {
         label: 'Dashboard',
-        href: '/donor/dashboard',
-        description: 'Your donor overview',
+        href: '/profile',
+        description: 'Your profile and overview',
       },
       {
         label: 'Blood Drives',
-        href: '/donor/blood-drives',
-        description: 'Find and book blood drives',
+        href: '/blood-drives',
+        description: 'Find blood drives near you',
       },
       {
         label: 'My Donations',
-        href: '/donor/donations',
+        href: '/donations',
         description: 'View your donation history',
       },
       {
-        label: 'Achievements',
-        href: '/donor/achievements',
-        description: 'Track your impact and achievements',
-      },
-      {
-        label: 'Locations',
-        href: '/donor/locations',
-        description: 'Manage favorite locations',
-      },
-      {
-        label: 'Profile',
-        href: '/profile',
-        description: 'Manage your profile',
+        label: 'Calendar',
+        href: '/calendar',
+        description: 'Your donation calendar',
       },
     ],
     secondary: [
@@ -147,18 +137,13 @@ export const navigationConfig: Record<string, RoleNavigation> = {
     primary: [
       {
         label: 'Dashboard',
-        href: '/system-admin/dashboard',
-        description: 'Global platform statistics',
+        href: '/admin',
+        description: 'System dashboard',
       },
       {
         label: 'Organizations',
-        href: '/system-admin/organizations',
+        href: '/admin/organizations',
         description: 'Manage all organizations',
-      },
-      {
-        label: 'System Admins',
-        href: '/system-admin/admins',
-        description: 'Manage system administrators',
       },
     ],
   },

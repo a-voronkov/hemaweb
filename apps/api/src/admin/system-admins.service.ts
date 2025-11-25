@@ -29,7 +29,7 @@ export class SystemAdminsService {
         isActive: true,
         isVerified: true,
         createdAt: true,
-        systemAdmin: {
+        staff: {
           select: {
             id: true,
             firstName: true,
@@ -86,8 +86,8 @@ export class SystemAdminsService {
         },
       });
 
-      // Create system admin profile
-      const systemAdmin = await tx.systemAdmin.create({
+      // Create staff profile (system admins don't belong to organization)
+      const staff = await tx.medicalCenterStaff.create({
         data: {
           userId: user.id,
           firstName: data.firstName,
@@ -95,7 +95,7 @@ export class SystemAdminsService {
         },
       });
 
-      return { user, systemAdmin };
+      return { user, staff };
     });
 
     return {
@@ -103,8 +103,8 @@ export class SystemAdminsService {
       data: {
         id: result.user.id,
         email: result.user.email,
-        firstName: result.systemAdmin.firstName,
-        lastName: result.systemAdmin.lastName,
+        firstName: result.staff.firstName,
+        lastName: result.staff.lastName,
       },
     };
   }
@@ -123,22 +123,20 @@ export class SystemAdminsService {
     const user = await this.prisma.user.findUnique({
       where: { id, deletedAt: null },
       include: {
-        systemAdmin: true,
+        staff: true,
       },
     });
 
-    if (!user || !user.systemAdmin) {
+    if (!user || !user.staff) {
       throw new NotFoundException('System admin not found');
     }
 
-    const systemAdminId = user.systemAdmin.id;
-
     // Update in transaction
     await this.prisma.$transaction(async (tx) => {
-      // Update system admin profile
+      // Update staff profile
       if (data.firstName !== undefined || data.lastName !== undefined) {
-        await tx.systemAdmin.update({
-          where: { id: systemAdminId },
+        await tx.medicalCenterStaff.update({
+          where: { id: user.staff.id },
           data: {
             firstName: data.firstName,
             lastName: data.lastName,

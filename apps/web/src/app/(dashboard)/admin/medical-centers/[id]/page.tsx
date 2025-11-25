@@ -13,24 +13,7 @@ import { apiClient } from '@/lib/api/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MedicalCenterMap } from '@/components/map/medical-center-map';
 import { LocationPicker } from '@/components/map/location-picker';
-import { WorkingHoursEditor } from '@/components/medical-centers/working-hours-editor';
 import { Building2, MapPin, Mail, Phone, Edit, Save, X } from 'lucide-react';
-
-interface DaySchedule {
-  isOpen: boolean;
-  openTime: string | null;
-  closeTime: string | null;
-}
-
-interface WorkingHours {
-  monday: DaySchedule;
-  tuesday: DaySchedule;
-  wednesday: DaySchedule;
-  thursday: DaySchedule;
-  friday: DaySchedule;
-  saturday: DaySchedule;
-  sunday: DaySchedule;
-}
 
 interface MedicalCenter {
   id: string;
@@ -41,7 +24,6 @@ interface MedicalCenter {
   email?: string;
   locationLat?: number;
   locationLng?: number;
-  workingHours?: WorkingHours | null;
   isActive: boolean;
   organization: {
     id: string;
@@ -71,8 +53,6 @@ export default function MedicalCenterDetailPage() {
     locationLng: '',
   });
 
-  const [workingHours, setWorkingHours] = useState<WorkingHours | null>(null);
-
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
@@ -97,7 +77,6 @@ export default function MedicalCenterDetailPage() {
         locationLat: res.data.locationLat?.toString() || '',
         locationLng: res.data.locationLng?.toString() || '',
       });
-      setWorkingHours(res.data.workingHours || null);
     } catch (err: any) {
       setError(err.message || 'Failed to load medical center');
     } finally {
@@ -115,13 +94,12 @@ export default function MedicalCenterDetailPage() {
         ...formData,
         locationLat: formData.locationLat ? parseFloat(formData.locationLat) : undefined,
         locationLng: formData.locationLng ? parseFloat(formData.locationLng) : undefined,
-        workingHours,
       });
 
       setSuccess('Medical center updated successfully!');
       setEditing(false);
       loadCenter();
-
+      
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       setError(err.message || 'Failed to update medical center');
@@ -345,12 +323,6 @@ export default function MedicalCenterDetailPage() {
                     }}
                   />
                 </div>
-
-                <WorkingHoursEditor
-                  workingHours={workingHours}
-                  onChange={setWorkingHours}
-                  disabled={false}
-                />
               </>
             ) : (
               <>
