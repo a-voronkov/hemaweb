@@ -29,9 +29,14 @@ export default function StaffDashboardPage() {
     }
 
     if (user) {
-      // Check if user is staff/admin
-      const allowedRoles = ['staff', 'admin', 'super_admin'];
-      if (!user.role || !allowedRoles.includes(user.role.code)) {
+      // Redirect admins to their dashboard
+      if (user.role?.code === 'admin' || user.role?.code === 'super_admin') {
+        router.push('/admin');
+        return;
+      }
+
+      // Check if user is staff
+      if (!user.role || user.role.code !== 'staff') {
         router.push('/profile');
         return;
       }

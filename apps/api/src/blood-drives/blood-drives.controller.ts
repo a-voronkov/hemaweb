@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { BloodDrivesService } from './blood-drives.service';
 import { CreateBloodDriveDto } from './dto/create-blood-drive.dto';
 import { UpdateBloodDriveDto } from './dto/update-blood-drive.dto';
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -22,6 +23,13 @@ export class BloodDrivesController {
     @Query('type') type?: string,
   ): Promise<{ data: any[] }> {
     return this.bloodDrivesService.getAllBloodDrives(status, type);
+  }
+
+  @Get('upcoming')
+  @ApiOperation({ summary: 'Get upcoming blood drives' })
+  @ApiResponse({ status: 200, description: 'Upcoming blood drives retrieved' })
+  async getUpcomingBloodDrives(): Promise<{ data: any[] }> {
+    return this.bloodDrivesService.getUpcomingBloodDrives();
   }
 
   @Get('nearby')
@@ -138,6 +146,55 @@ export class BloodDrivesController {
   @ApiResponse({ status: 200, description: 'Registrations retrieved' })
   async getBloodDriveRegistrations(@Param('id') id: string) {
     return this.bloodDrivesService.getBloodDriveRegistrations(id);
+  }
+
+  @Post('appointments')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('donor')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Book appointment for blood drive (Donor only)' })
+  @ApiResponse({ status: 201, description: 'Appointment booked' })
+  @ApiResponse({ status: 400, description: 'Not eligible or drive is full' })
+  async bookAppointment(
+    @Request() req,
+    @Body() body: CreateAppointmentDto,
+  ) {
+    return this.bloodDrivesService.bookAppointment(
+      req.user.id,
+      body.bloodDriveId,
+      body.appointmentDate,
+      body.appointmentTime
+    );
+  }
+
+  @Get('appointments/my')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('donor')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get my appointments (Donor only)' })
+  @ApiResponse({ status: 200, description: 'Appointments retrieved' })
+  async getMyAppointments(@Request() req) {
+    return this.bloodDrivesService.getMyAppointments(req.user.id);
+  }
+
+  @Delete('appointments/:id')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('donor')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cancel appointment (Donor only)' })
+  @ApiResponse({ status: 200, description: 'Appointment cancelled' })
+  async cancelAppointment(@Request() req, @Param('id') id: string) {
+    return this.bloodDrivesService.cancelAppointment(req.user.id, id);
+  }
+
+  @Put(':id/archive')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles('staff', 'admin', 'super_admin')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Archive blood drive (staff/admin only)' })
+  @ApiResponse({ status: 200, description: 'Blood drive archived' })
+  async archiveBloodDrive(@Param('id') id: string) {
+    return this.bloodDrivesService.archiveBloodDrive(id);
   }
 }
 

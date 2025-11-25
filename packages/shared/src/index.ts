@@ -1,0 +1,2 @@
+export * from './blood-compatibility';
+

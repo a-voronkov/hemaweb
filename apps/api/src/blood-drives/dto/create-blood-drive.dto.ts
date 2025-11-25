@@ -3,6 +3,15 @@ import { IsString, IsOptional, IsDateString, IsArray, IsNumber, MinLength, MaxLe
 
 export class CreateBloodDriveDto {
   @ApiProperty({
+    example: 'cuid123',
+    description: 'Medical center ID (optional for staff, required for admin)',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  medicalCenterId?: string;
+
+  @ApiProperty({
     example: 'Emergency Blood Drive - O Negative Needed',
     description: 'Blood drive title',
   })
@@ -20,6 +29,24 @@ export class CreateBloodDriveDto {
   @IsString()
   @MaxLength(1000)
   description?: string;
+
+  @ApiProperty({
+    example: '123 Main Street',
+    description: 'Address for the blood drive',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @ApiProperty({
+    example: 'Bangkok',
+    description: 'City for the blood drive',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  city?: string;
 
   @ApiProperty({
     example: 'emergency',

@@ -176,6 +176,18 @@ model Profile {
   isDonorVerified       Boolean   @default(false) // Medical verification
   lastDonationDate      DateTime?
   nextEligibleDate      DateTime?
+  weight                Float? // Weight in kg
+  // Eligibility questionnaire responses
+  hasChronicIllness     Boolean?
+  hasRecentTattoo       Boolean?
+  hasRecentPiercing     Boolean?
+  hasRecentSurgery      Boolean?
+  hasRecentTransfusion  Boolean?
+  isPregnant            Boolean?
+  isBreastfeeding       Boolean?
+  hasInfectiousDisease  Boolean?
+  takingMedication      Boolean?
+  eligibilityNotes      String? // Additional notes from questionnaire
   // PostGIS geography type for location
   locationLat           Float?
   locationLng           Float?
@@ -200,11 +212,32 @@ model Profile {
   verificationRecords VerificationRecord[]
   donationRecords     DonationRecord[]
   bloodDriveRegistrations BloodDriveRegistration[]
+  favoriteLocations   DonorFavoriteLocation[]
 
   @@index([userId])
   @@index([bloodTypeId])
   @@index([isDonorVerified])
   @@map("profiles")
+}
+
+// Donor Favorite Locations (for finding nearby blood drives)
+model DonorFavoriteLocation {
+  id          String   @id @default(cuid())
+  profileId   String
+  name        String   // e.g., "Home", "Work", "University"
+  latitude    Float
+  longitude   Float
+  radiusKm    Int      @default(5) // Search radius in kilometers
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([isActive])
+  @@map("donor_favorite_locations")
 }
 
 // Medical Center Staff Profile (Staff, Admin, Super Admin)
@@ -292,6 +325,7 @@ model MedicalCenter {
   logoUrl        String?
   website        String?
   operatingHours Json? // { "monday": "08:00-17:00", ... }
+  workingHours   Json? // { "monday": { "isOpen": true, "openTime": "08:00", "closeTime": "17:00" }, ... }
   isActive       Boolean   @default(true)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -373,13 +407,16 @@ model BloodDriveBloodType {
 
 // Blood Drive Registrations
 model BloodDriveRegistration {
-  id           String   @id @default(cuid())
-  bloodDriveId String
-  profileId    String
-  status       String   @default("registered") // registered, attended, cancelled
-  notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  bloodDriveId       String
+  profileId          String
+  confirmationNumber String?   @unique
+  appointmentDate    DateTime?
+  appointmentTime    String?
+  status             String    @default("registered") // registered, attended, cancelled
+  notes              String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   // Relations
   bloodDrive BloodDrive @relation(fields: [bloodDriveId], references: [id], onDelete: Cascade)
@@ -388,6 +425,7 @@ model BloodDriveRegistration {
   @@unique([bloodDriveId, profileId])
   @@index([bloodDriveId])
   @@index([profileId])
+  @@index([confirmationNumber])
   @@map("blood_drive_registrations")
 }
 

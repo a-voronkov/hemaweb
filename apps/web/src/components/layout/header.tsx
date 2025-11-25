@@ -5,6 +5,7 @@
  * Mobile-first navigation header with dynamic role-based menu
  */
 
+import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
@@ -23,7 +24,12 @@ import { Menu, User, LogOut } from 'lucide-react';
 export function Header() {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const navigation = getNavigationForRole(user?.role?.code);
+
+  // Force re-render when user changes by using user state in navigation
+  const navigation = React.useMemo(
+    () => getNavigationForRole(user?.role?.code),
+    [user?.role?.code]
+  );
 
   const handleLogout = async () => {
     try {
