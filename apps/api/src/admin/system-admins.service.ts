@@ -140,7 +140,7 @@ export class SystemAdminsService {
       // Update system admin profile
       if (data.firstName !== undefined || data.lastName !== undefined) {
         await tx.systemAdmin.update({
-          where: { id: user.systemAdmin.id },
+          where: { id: user.systemAdmin!.id },
           data: {
             firstName: data.firstName,
             lastName: data.lastName,
